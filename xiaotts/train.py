@@ -145,6 +145,9 @@ def main():
     parser.add_argument("--wave-weight", type=float, default=0.15)
     parser.add_argument("--workers", type=int, default=0, help="CPU feature prefetch workers")
     parser.add_argument("--per-language", type=int, default=1, help="Clips per language in every batch")
+    parser.add_argument("--train-clips-per-language", type=int, default=0,
+                        help="Correctness overfit limit; zero uses the full training split")
+    parser.add_argument("--training-panel", action="store_true", help="Also save labeled training-example diagnostics")
     parser.add_argument("--wave-pitch-grad", action="store_true",
                         help="Experimental: backpropagate spectral loss through oscillator phase")
     args = parser.parse_args()
@@ -163,6 +166,10 @@ def main():
     rows = [json.loads(line) for line in (args.features / "index.jsonl").read_text().splitlines()]
     training = {language: [row for row in rows if row["language"] == language and row["split"] == "train"]
                 for language in LANGUAGES}
+    if args.train_clips_per_language < 0:
+        raise ValueError("Training clip limit must be nonnegative")
+    if args.train_clips_per_language:
+        training = {language: selected[:args.train_clips_per_language] for language, selected in training.items()}
     development = [row for row in rows if row["split"] == "dev"]
     if any(not training[language] or not any(row["language"] == language for row in development)
            for language in LANGUAGES):
@@ -253,6 +260,9 @@ def main():
                 evaluation = validate(model, development, device)
                 atomic_json(args.output/f"dev-{step:06d}.json", evaluation)
                 samples(model, renderer, fixed_samples, args.output/f"samples-{step:06d}", device)
+                if args.training_panel:
+                    samples(model, renderer, [training[language][0] for language in LANGUAGES],
+                            args.output/f"training-samples-{step:06d}", device)
                 checkpoint(step)
                 state.update(step=step, elapsed=time.monotonic()-started, latest_dev=evaluation)
                 atomic_json(args.output/"run.json", state)

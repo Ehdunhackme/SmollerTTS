@@ -34,7 +34,7 @@ export function tokenize(text, language, lexicon) {
   const result = [];
   for (const chunk of chunks) for (let i = 0; i < chunk.length;) {
     let length = Math.min(12, chunk.length - i);
-    while (length > 1 && !Object.hasOwn(lexicon, chunk.slice(i, i + length))) length--;
+    while (length > 1 && !lexicon.has(chunk.slice(i, i + length))) length--;
     result.push(chunk.slice(i, i + length)); i += length;
   }
   return result;
@@ -57,8 +57,9 @@ export async function createFrontend(config, loadLexicon) {
         continue;
       }
       for (const word of tokenize(chunk, language, lexicon)) {
-        if (!Object.hasOwn(lexicon, word)) { missing.push(word); continue; }
-        const marked = lexicon[word].map(label => label.slice());
+        const entry = lexicon.get(word);
+        if (!entry) { missing.push(word); continue; }
+        const marked = entry.map(label => label.slice());
         if (language !== 'zh') {
           const key = language + ':' + word;
           if (!cache.has(key)) cache.set(key, wordStress(ephone.textToIpa(word)));

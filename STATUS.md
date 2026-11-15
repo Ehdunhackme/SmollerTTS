@@ -25,6 +25,13 @@ Updated 15 November 2026. This is an early research implementation, not a releas
   Short examples generated faster than real time on this PC; see docs/browser-validation.md.
 - CPU feature prefetch passed a 600-step server check after fixing retained shared
   tensor file descriptors. Every batch still contains all five languages.
+- The compact browser pronunciation format preserves all 487,131 dictionary entries.
+  Retesting passed for all five languages online/offline. Application assets fell
+  from 58.97 MB to 35.28 MB raw; measured Chromium private memory fell from 683 MB
+  to 371 MB in the isolated test (not a portable resident-RAM measurement).
+- A frozen 100-sentence text-input development evaluator now hashes its protocol,
+  dictionary/vocabulary assets and exact ASR weights. Its first debug-model evaluation
+  completed and confirms poor speech; see docs/evaluation-protocol.md for all results.
 - A fitted-control renderer diagnostic produced finite audio in all languages; a small ASR panel matched
   the reference-recording error rates after fitting. This is reconstruction evidence, not TTS quality evidence.
 - Corrected debug alignment/feature cache has 200 clips, 40 per language: 32 train and 8 dev each.
@@ -55,6 +62,8 @@ Inspect those records together with the live process table; a stale JSON file is
 - `runs/lexicon-augmentation`: completed full corpus pronunciation preparation.
 - `runs/full-data-preparation`: waits on that exact process, then aligns and caches full train/dev data.
 - `runs/full-baseline-pipeline`: waits on the exact full-data job, audits it, then trains the baseline.
+- `runs/frozen-debug-evaluation`: completed the first fixed text-input evaluation.
+- `runs/overfit-five-clips`: stronger memorization diagnostic, one training clip per language.
 - `runs/debug-train-v1`, `runs/debug-train-v2`: completed scratch training runs.
 - `runs/debug-asr-v1`, `runs/debug-asr-v2`: completed development diagnostics.
 - `artifacts/export-smoke-v2`: native ONNX parity report.
@@ -73,5 +82,5 @@ budgets and checkpoints; there is no campaign billing cap or provider shutdown r
 1. Inspect trained-example reconstruction and actual text inference; retain honest per-language failures.
 2. Complete full-data alignment and feature auditing, then train and profile the baseline from scratch.
 3. Implement and test complete browser CPU inference and pronunciation, counting all deployed assets.
-4. Freeze the development evaluator and promotion rules before broader autonomous trials.
+4. Calibrate the fixed development evaluator and provisional promotion rules against the full baseline.
 5. Run comparable experiments, repeat finalists, evaluate locked final tests and deliver the verified demo.

@@ -5,7 +5,8 @@ early voice, not a final model or a naturalness benchmark.
 
 ## Tested
 
-- Playwright Chromium 156.0.8078.4 on the development Windows PC, launched with
+- Playwright Chromium 156.0.8078.4 on a Windows PC with an Intel Core i5-12500H
+  (12 cores / 16 logical processors), launched with
   `--disable-gpu`. ONNX sessions explicitly use WASM CPU with one thread.
 - Five actual-text examples, one per language. Same encoder/decoder weights reused.
 - All five examples repeated after disabling network access and reloading the page.
@@ -29,18 +30,29 @@ latency claim is made.
 
 | Language | Audio duration | Online generation | Offline generation |
 | --- | ---: | ---: | ---: |
-| English | 2.14 s | 0.324 s | 0.468 s |
-| Mandarin | 4.13 s | 0.476 s | 0.670 s |
-| Spanish | 2.48 s | 0.561 s | 0.552 s |
-| French | 3.07 s | 0.775 s | 0.728 s |
-| German | 2.80 s | 0.669 s | 0.627 s |
+| English | 2.14 s | 0.248 s | 0.408 s |
+| Mandarin | 4.13 s | 0.308 s | 0.560 s |
+| Spanish | 2.48 s | 0.239 s | 0.385 s |
+| French | 3.07 s | 0.308 s | 0.560 s |
+| German | 2.80 s | 0.364 s | 0.384 s |
 
-Neural graphs: 3,073,348 bytes. Versioned application assets: 58,968,061 raw bytes,
+Neural graphs: 3,073,348 bytes. Versioned application assets: 35,281,833 raw bytes,
 excluding the small generated inventory and service-worker script themselves.
 Most bytes are pronunciation dictionaries and ONNX Runtime; parameter count alone
-does not describe deployment size. Download time over the Internet and full browser
-memory consumption have not been measured. The local cold load/cache check took
-1.01 seconds and is not an Internet download estimate.
+does not describe deployment size. Download time over the Internet has not been
+measured. The local cold load/cache check is not an Internet download estimate.
+
+All 487,131 pronunciation entries are stored in compact binary records and looked
+up without constructing nested JavaScript arrays for the whole dictionary. The
+packed files were verified against every source JSON entry, and the complete
+five-language online/offline test was rerun after the change.
+
+A separate Windows memory check sampled the isolated Chromium process tree every
+50 ms. Peak private committed memory was 370,716,672 bytes (blank browser:
+70,717,440 bytes); the peak sum of working sets was 501,440,512 bytes. These include
+browser startup, caching, pronunciation, runtime and generation. Private committed
+bytes are not resident RAM; summing working sets can double-count shared pages.
+The preceding JSON-table build reached 683,458,560 private bytes in the same test.
 
 The source version and exact generated file hashes are in the saved asset inventory.
 Raw test results, screenshots, WAV files and neural parity output are in the ignored

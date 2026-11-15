@@ -1,4 +1,5 @@
 import { createFrontend } from './frontend.mjs';
+import { Lexicon } from './lexicon.mjs';
 import { synthesize, SAMPLE_RATE, HOP } from './dsp.mjs';
 
 let ort, loaded, busy = false;
@@ -12,7 +13,10 @@ async function initialize(base) {
   const config = await json(new URL('model/frontend.json', base));
   const lexicons = new Map();
   const loadLexicon = language => {
-    if (!lexicons.has(language)) lexicons.set(language, json(new URL(`model/${language}.json`, base)));
+    if (!lexicons.has(language)) lexicons.set(language, fetch(new URL(`model/${language}.lex`, base)).then(async response => {
+      if (!response.ok) throw new Error('Could not load pronunciation data');
+      return new Lexicon(await response.arrayBuffer());
+    }));
     return lexicons.get(language);
   };
   const [encoder, decoder, frontend] = await Promise.all([

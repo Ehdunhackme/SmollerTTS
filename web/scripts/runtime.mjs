@@ -10,7 +10,7 @@ for (const name of ['ort.wasm.min.mjs', 'ort-wasm-simd-threaded.mjs', 'ort-wasm-
 }
 await copyFile(path.join(root, 'node_modules/ephone/COPYING'), path.join(runtime, 'ephone-GPL-3.0.txt'));
 await copyFile(path.join(root, 'licenses/onnxruntime-LICENSE.txt'), path.join(runtime, 'onnxruntime-LICENSE.txt'));
-for (const name of ['encoder.onnx', 'decoder.onnx', 'frontend.json', ...['en','zh','es','fr','de'].map(l => l + '.json')]) {
+for (const name of ['encoder.onnx', 'decoder.onnx', 'frontend.json', ...['en','zh','es','fr','de'].map(l => l + '.lex')]) {
   await readFile(path.join(root, 'public/model', name));
 }
 console.log('Copied matching CPU runtime and verified local model assets.');
