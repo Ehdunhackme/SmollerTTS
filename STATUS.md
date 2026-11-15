@@ -9,9 +9,10 @@ Updated 15 November 2026. This is an early research implementation, not a releas
 - Remote A100 SXM4 40 GB is working with CUDA PyTorch 2.7.0. Training uses a separate environment.
 - All five real-audio corpora downloaded, hashed and extracted. Nested CSS10 copies are not counted twice.
 - Frozen passage-level train/dev/test splits, with at least 200 final-test clips per language.
-  Training audio after initial checks/splits is 84.89 hours; further alignment/quality rejection is pending.
+  After alignment and feature checks, training retains 40,940 clips and 84.63 hours.
+  The train/dev cache contains 41,988 clips; 121 unusable recordings were rejected.
 - Shared model: 757,828 learned parameters; fixed differentiable renderer: zero learned parameters.
-- Five correctness tests passed on the server, including padding invariance, floating-point WAV ingestion,
+- Nine correctness tests passed on the server, including padding invariance, floating-point WAV ingestion,
   tone preservation, all-language gradients and waveform synthesis gradients.
 - Random-weight ONNX encoder/decoder passed native CPU parity over all five language IDs and two new
   sequence lengths. Maximum absolute error was 2.87e-6. This is not a browser test.
@@ -53,9 +54,9 @@ Updated 15 November 2026. This is an early research implementation, not a releas
   recognition errors. These tiny panels cannot support benchmark or naturalness claims.
 - The first renderer gradient implementation destabilized predicted pitch. The current training path
   supervises pitch directly and detaches it from the oscillator's spectral gradient by default.
-- Full-corpus OOV pronunciation generation and full train/dev alignment completed.
-  Acoustic feature caching is running. A verified dependent job audits all languages
-  and starts the 50,000-step baseline when caching succeeds; training has not begun yet.
+- Full-corpus pronunciation, alignment, acoustic caching and the five-language audit
+  completed. The 50,000-step baseline is training from random weights on the A100.
+  A dependent review job will run the frozen text-input evaluation and native export.
 - Native and browser pronunciation use dictionaries with explicit stress/tones.
   Unknown words and digits produce explicit errors; broader pronunciation and number handling remain.
 - Browser DSP and the local UI work with the debug checkpoint. Final quality evaluation,
@@ -71,8 +72,9 @@ Supervised jobs record real process IDs, command arguments and exit state under 
 Inspect those records together with the live process table; a stale JSON file is not proof of a live job.
 
 - `runs/lexicon-augmentation`: completed full corpus pronunciation preparation.
-- `runs/full-data-preparation`: waits on that exact process, then aligns and caches full train/dev data.
-- `runs/full-baseline-pipeline`: waits on the exact full-data job, audits it, then trains the baseline.
+- `runs/full-data-preparation`: completed full train/dev alignment and caching.
+- `runs/full-baseline-pipeline`: passed the data audit and is training the baseline.
+- `runs/full-baseline-review`: waits on the exact baseline job, then evaluates and exports it.
 - `runs/gpu-recovery-deterministic-v2`: successful A100 recovery verification.
 - `runs/frozen-debug-evaluation`: completed the first fixed text-input evaluation.
 - `runs/overfit-five-clips`: stronger memorization diagnostic, one training clip per language.
@@ -91,8 +93,8 @@ budgets and checkpoints; there is no campaign billing cap or provider shutdown r
 
 ## Next work
 
-1. Inspect trained-example reconstruction and actual text inference; retain honest per-language failures.
-2. Complete full-data alignment and feature auditing, then train and profile the baseline from scratch.
-3. Implement and test complete browser CPU inference and pronunciation, counting all deployed assets.
-4. Calibrate the fixed development evaluator and provisional promotion rules against the full baseline.
-5. Run comparable experiments, repeat finalists, evaluate locked final tests and deliver the verified demo.
+1. Finish and evaluate the full baseline, retaining per-language failures and measured compute.
+2. Compare released small TTS voices on the same fixed development sentences.
+3. Run recorded experiments based on the baseline evidence; repeat promising recipes.
+4. Evaluate the locked final tests only after selecting the recipe, and obtain fluent listening feedback.
+5. Install the selected checkpoint in the browser demo and repeat the complete CPU/offline checks.

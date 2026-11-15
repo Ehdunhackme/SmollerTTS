@@ -3,7 +3,7 @@
 An experimental shared TTS model for English, Mandarin, Spanish, French and German,
 trained from random initialization with fewer than **1,000,000 learned inference parameters**.
 
-**Status: all five corpora downloaded and aligned; full feature caching is running.
+**Status: all five corpora prepared; the 50,000-step full-data baseline is training.
 The local browser prototype works, but speech quality is still poor.** The neural network has
 757,828 parameters and the differentiable waveform renderer has zero learned parameters.
 
@@ -17,7 +17,8 @@ participate from the first training experiment, including debugging runs.
 - Other four languages: [CSS10](https://github.com/Kyubyong/css10), whose linked
   Kaggle releases list CC0. The source listing and archive hashes are saved during download.
 - Original audio is preserved. Training, development and final test passages are
-  separated before tuning. Actual retained hours will be reported after validation.
+  separated before tuning. After alignment and feature checks, training retains
+  40,940 recordings and 84.63 hours; 1,048 development recordings are cached separately.
 - No synthetic speech generation. Pretrained aligners can annotate recordings;
   their weights are not part of the deployed TTS model.
 
@@ -70,8 +71,9 @@ prefetch workers matched an uninterrupted run exactly after recovery at step 50.
 
 The initial native frontend uses MFA dictionaries and eSpeak NG stress annotations.
 It supports new sentences made from known words and reports unknown words explicitly.
-Number normalization, pronunciation of unknown dictionary words and the final
-benchmark harness are still outstanding. Debug samples generated from alignment
+Number normalization, pronunciation of unknown dictionary words and final-test
+evaluation are still outstanding. The frozen development evaluator is implemented.
+Debug samples generated from alignment
 phonemes are labeled as such; they do not establish arbitrary-text performance.
 
 ## Local browser demo

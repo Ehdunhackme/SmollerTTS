@@ -13,6 +13,7 @@ from xiaotts.fetch import atomic_json
 from xiaotts.benchmark import digest
 from xiaotts.model import ModelConfig, XiaoTTS
 from xiaotts.selection import compare
+from xiaotts.checkpoints import feature_identity, training_identity
 
 ALLOWED = {'lr', 'width', 'wave_weight', 'spectral_start'}
 
@@ -44,6 +45,10 @@ def main():
         raise ValueError('The baseline must be trained from random initialization')
     if incumbent['arguments'].get('train_clips_per_language', 0):
         raise ValueError('A debugging subset cannot stand in for the full-data baseline')
+    if incumbent.get('training_identity') != training_identity():
+        raise ValueError('These one-setting trials require the same training source as the incumbent')
+    if incumbent.get('feature_identity') != feature_identity(Path(incumbent['arguments']['features'])):
+        raise ValueError('The incumbent feature cache changed')
     config = dict(incumbent['arguments'])
     config.update(changes)
     model = XiaoTTS(ModelConfig(width=int(config['width'])))
@@ -79,6 +84,8 @@ def main():
             raise ValueError('Candidate did not complete the matched training budget')
         if training['features'] != incumbent['features']:
             raise ValueError('Candidate features differ from the baseline')
+        if training['training_identity'] != incumbent['training_identity'] or training['feature_identity'] != incumbent['feature_identity']:
+            raise ValueError('Training source or features changed during the trial')
         subprocess.run([sys.executable, '-m', 'xiaotts.export', '--checkpoint', str(checkpoint),
                         '--output', str(output/'export')], check=True)
         subprocess.run([sys.executable, '-m', 'xiaotts.benchmark', 'evaluate', '--panel', str(args.panel),
