@@ -56,3 +56,9 @@ helps distinguish renderer limitations from errors made by the text-to-acoustics
 model. It is excluded from candidate selection and benchmark claims.
 Both rendering directories are sealed with separate SHA256 inventories before
 scoring. Scoring verifies each input text, language, audio hash and the report hash.
+
+`scripts/render_alignment_diagnostic.py` additionally gives the baseline the
+accepted alignment phonemes, once with predicted durations and once with true
+durations. It retains alignment failures and all original panel rows. Comparing
+these two conditions with actual-text inference can expose timing/frontend
+problems; neither condition is eligible for promotion or a TTS quality claim.

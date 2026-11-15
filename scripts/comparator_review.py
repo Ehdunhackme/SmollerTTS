@@ -10,3 +10,10 @@ subprocess.run([sys.executable, '-m', 'scripts.score_comparator',
 wait_success('runs/oracle-panel-render/process.json')
 subprocess.run([sys.executable, '-m', 'scripts.score_comparator',
                 '--directory', 'artifacts/oracle-dev-v1'], check=True)
+subprocess.run([sys.executable, '-m', 'scripts.render_alignment_diagnostic',
+                '--checkpoint', 'runs/full-baseline-v1/latest.pt',
+                '--output', 'artifacts/baseline-alignment-dev-v1'], check=True)
+for mode in ('predicted-durations', 'true-durations'):
+    directory = 'artifacts/baseline-alignment-dev-v1/'+mode
+    subprocess.run([sys.executable, '-m', 'scripts.seal_render', directory], check=True)
+    subprocess.run([sys.executable, '-m', 'scripts.score_comparator', '--directory', directory], check=True)
