@@ -70,5 +70,7 @@ seed, optimizer-step count and batch composition, then exports and evaluates the
 candidate. It preserves both models and appends the outcome to an experiment ledger.
 
 The same step count is a matched data/optimizer budget, not identical GPU cost;
-the record includes both measured training times. No broad trial has started yet.
-This runner has passed CLI/syntax checks but awaits its first actual full-data trial.
+the record includes both measured training times. The first actual trial,
+`trial-width144-seed17`, increases shared width from 128 to 144 with 948,164 learned
+parameters, preserving the baseline's 50,000 steps, seed and batch composition.
+Its outcome is pending; the finished baseline remains the incumbent.

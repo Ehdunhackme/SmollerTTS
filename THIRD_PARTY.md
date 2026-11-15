@@ -25,10 +25,10 @@ Architectural references (independent implementation):
 - Neural source-filter synthesis: https://arxiv.org/abs/1810.11946
 - Tiny Voca's published source-filter design: https://github.com/n4ze3m/tiny-voca/blob/main/docs/model.md
 
-Browser dependency ephone 1.0.2 (https://github.com/sjmik/ephone-js) is a modified
-eSpeak NG phonemizer under GPL-3.0-or-later. Its bundled license and corresponding
-upstream source are linked by the demo. Its rule-based pronunciation code contains
-no learned neural parameters. ONNX Runtime Web is MIT licensed; its license is also
+Browser pronunciation tables are compiled offline from the MFA dictionaries using
+the same eSpeak NG stress annotations as the native frontend. The compiler records
+the executable version/hash, source hash and dictionary identities. The browser
+uses those fixed labels directly. ONNX Runtime Web is MIT licensed; its license is
 bundled. The browser build produces a hash/byte inventory including all dictionaries,
-phonemizer packs, runtime binaries, JavaScript and neural graphs. A small neural
+runtime binaries, JavaScript and neural graphs. A small neural
 parameter count does not describe the size of these supporting assets.

@@ -1,9 +1,9 @@
 # Browser validation, 15 November 2026
 
-Checkpoint: `full-baseline-v1/step-010000.pt`, 757,828 learned parameters.
-SHA256: `6c0c9d2ae697c6f8756ef746c322000159d7ca16d404fe25977940ddeb3c9764`.
-This is an early checkpoint while the 50,000-step run continues. Its speech quality
-has not yet been established; these checks measure deployment, not naturalness.
+Checkpoint: `full-baseline-v1/latest.pt`, finished at 50,000 steps, 757,828 learned parameters.
+SHA256: `a8e82c96e175a8f70106a80c5fdd4e29b45bad28db436f0667a78346e8ada065`.
+The fixed native development evaluation is in `baseline-results.md`. These browser
+checks measure deployment and numerical agreement, not naturalness.
 
 ## Tested
 
@@ -15,10 +15,11 @@ has not yet been established; these checks measure deployment, not naturalness.
   No external requests or page errors. No server performs inference.
 - Audio was finite and non-silent, with no sample clipping in the ten cases.
 - WAV download, explicit number-input errors, and 375px layout without horizontal overflow.
-- Native/browser pronunciation tokens, Mandarin tones and stress agreed on the five
-  reference examples. This is not an exhaustive pronunciation audit.
+- Native/browser pronunciation tokens, Mandarin tones, stress and segmentation
+  agree on all 99 supported sentences in the 100-prompt development panel. One
+  Mandarin number-normalization failure is retained in both implementations.
 - Native PyTorch versus browser WASM encoder/decoder parity for both input lengths
-  in every language (ten cases): largest absolute error 2.44e-5, within
+  in every language (ten cases): largest absolute error 4.39e-5, within
   atol=2e-5/rtol=2e-4. Checkpoint identity and all output shapes also match.
 - Fixed DSP versus PyTorch with identical excitation: maximum waveform error
   2.69e-7, relative RMS error 8.71e-7. The independent harmonic oscillator's relative
@@ -33,13 +34,13 @@ latency claim is made.
 
 | Language | Audio duration | Online generation | Offline generation |
 | --- | ---: | ---: | ---: |
-| English | 2.16 s | 0.231 s | 0.389 s |
-| Mandarin | 3.69 s | 0.317 s | 0.542 s |
-| Spanish | 2.71 s | 0.274 s | 0.452 s |
-| French | 2.77 s | 0.260 s | 0.471 s |
-| German | 2.71 s | 0.216 s | 0.356 s |
+| English | 2.08 s | 0.222 s | 0.366 s |
+| Mandarin | 3.82 s | 0.328 s | 0.564 s |
+| Spanish | 2.72 s | 0.248 s | 0.422 s |
+| French | 2.51 s | 0.243 s | 0.429 s |
+| German | 2.67 s | 0.221 s | 0.373 s |
 
-Neural graphs: 3,073,348 bytes. Versioned application assets: 35,283,940 raw bytes,
+Neural graphs: 3,073,348 bytes. Versioned application assets: 33,310,808 raw bytes,
 excluding the small generated inventory and service-worker script themselves.
 Most bytes are pronunciation dictionaries and ONNX Runtime; parameter count alone
 does not describe deployment size. Download time over the Internet has not been
@@ -47,12 +48,15 @@ measured. The local cold load/cache check is not an Internet download estimate.
 
 All 487,131 pronunciation entries are stored in compact binary records and looked
 up without constructing nested JavaScript arrays for the whole dictionary. The
-packed files were verified against every source JSON entry, and the complete
-five-language online/offline test was rerun after the change.
+packed files were verified against every matching native-labeled JSON cache entry,
+and the complete five-language online/offline test was rerun after the change.
+Stress is compiled offline using the exact native frontend, rather than approximated
+in JavaScript. This fixed stress differences in 15 development sentences and removed
+the runtime phonemizer. It does not add any learned inference parameters.
 
 A separate Windows memory check sampled the isolated Chromium process tree every
-50 ms. Peak private committed memory was 366,452,736 bytes (blank browser:
-68,005,888 bytes); the peak sum of working sets was 502,652,928 bytes. These include
+50 ms. Peak private committed memory was 361,652,224 bytes (blank browser:
+68,222,976 bytes); the peak sum of working sets was 500,264,960 bytes. These include
 browser startup, caching, pronunciation, runtime and generation. Private committed
 bytes are not resident RAM; summing working sets can double-count shared pages.
 The preceding JSON-table debug build reached 683,458,560 private bytes in the same
@@ -62,8 +66,8 @@ isolated estimate of the dictionary-format effect.
 The source version and exact generated file hashes are in the saved asset inventory.
 Raw test results, screenshots, WAV files and neural parity output are in the ignored
 `artifacts/browser/` directory. The browser model assets are also ignored by Git.
-The preceding debug model and its validation evidence are preserved under
-`artifacts/browser-model-backups/20261115T135544Z-7d31f9/`. Future installations
+The preceding 10,000-step model and its validation evidence are preserved under
+`artifacts/browser-model-backups/20261115T142412Z-04065b/`. Future installations
 must pass the checkpoint/vocabulary/file-hash checks before repeating browser QA.
 
 ## Remaining limitations
@@ -71,8 +75,8 @@ must pass the checkpoint/vocabulary/file-hash checks before repeating browser QA
 - Unknown dictionary words and digits fail explicitly; users must spell numbers out.
 - Earlier debug models had poor generalization. Faster-than-real-time synthesis does not
   establish intelligibility, pleasantness, Mandarin tone accuracy or benchmark rank.
-- The ephone wrapper treats isolated function words differently from the native
-  annotation executable; a documented stress rule restores the tested cases.
-  Broader pronunciation parity remains to be audited.
+- The pronunciation tables inherit the native dictionary/annotation pipeline's
+  limitations. Exact implementation agreement does not prove correct pronunciation
+  for every context or Mandarin reading.
 - Only Chromium was tested. Mobile screenshots are responsive-layout checks on
   desktop Chromium, not performance or audio testing on a physical phone.

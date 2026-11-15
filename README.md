@@ -3,8 +3,9 @@
 An experimental shared TTS model for English, Mandarin, Spanish, French and German,
 trained from random initialization with fewer than **1,000,000 learned inference parameters**.
 
-**Status: all five corpora prepared; the 50,000-step full-data baseline is training.
-The local browser prototype works; full-baseline speech evaluation is pending.** The neural network has
+**Status: the 50,000-step full-data baseline has finished, with fixed development
+evaluation and an offline browser demo. A controlled 948,164-parameter trial is
+training; repeated seeds, final-test evaluation and listening remain pending.** The baseline network has
 757,828 parameters and the differentiable waveform renderer has zero learned parameters.
 
 The first version targets one recorded voice per language. Mandarin tones and
@@ -50,7 +51,8 @@ the training server.
 .venv/bin/python -m xiaotts.export --checkpoint runs/baseline-v1/latest.pt --output artifacts/baseline-export
 ```
 
-These are the pipeline interfaces, not evidence that the full baseline has finished.
+The first full-data baseline completed in 39.06 minutes on one A100 SXM4 40 GB.
+See [baseline results](docs/baseline-results.md) for measured results and limitations.
 Use `scripts/session_job.py --name <unique-name> --timeout-seconds <seconds> -- <command>`
 to record and supervise a job. Each training run stores its actual source snapshot,
 configuration, seed, data fingerprint, checkpoints, metrics and five-language samples.
@@ -79,7 +81,7 @@ phonemes are labeled as such; they do not establish arbitrary-text performance.
 ## Local browser demo
 
 The complete text-to-audio path has been tested in Chromium with the GPU disabled,
-including an offline reload and all five languages. It uses the shared 10,000-step
+including an offline reload and all five languages. It uses the shared 50,000-step
 full-data checkpoint, a WASM CPU neural runtime and JavaScript DSP. This proves deployment
 feasibility, not speech quality. See [browser validation](docs/browser-validation.md).
 
@@ -92,7 +94,7 @@ checkpoint and its exact feature cache):
 
 The packaging command verifies checkpoint/feature identities and records hashes
 for every exported asset. Use a finished, selected checkpoint for the final demo;
-the current prototype is an early checkpoint. Copy the bundle to local artifacts,
+the current prototype uses the finished baseline, pending research selection. Copy the bundle to local artifacts,
 then use `python scripts/install_browser_model.py artifacts/<bundle-directory>`.
 The installer checks every file hash and preserves the previous model and browser
 evidence before replacing `web/public/model/`. Then:
@@ -107,7 +109,9 @@ npm run preview
 Open the localhost URL printed by Vite. The production build caches all five
 languages for offline use. `npm run dev` does not install that offline cache.
 `dist/asset-report.json` records asset hashes and raw sizes; the supporting runtime
-and dictionaries are substantially larger than the 3.07 MB neural graphs.
+and dictionaries are substantially larger than the 3.07 MB neural graphs. The
+current complete inventory is 33.31 MB before compression. Native stress labels
+are compiled into the pronunciation tables offline; no phonemizer runs in the browser.
 No public website or model release has been published.
 
 For reproducible validation, run `python -m scripts.browser_fixture` from the repo
