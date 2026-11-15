@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/
+artifacts/
+runs/
+logs/
+*.onnx
+*.pt
+*.npz
+.env
+.mfa/
+.mamba/
+*.tar.gz
+*.zip
