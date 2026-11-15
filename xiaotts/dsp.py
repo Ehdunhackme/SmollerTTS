@@ -16,6 +16,26 @@ HARMONIC_BANDS = 40
 NOISE_BANDS = 24
 
 
+def reflect_pad(values, padding):
+    """Equivalent reflection via indexing, whose CUDA gradient is deterministic."""
+    size = values.shape[-1]
+    if padding >= size:
+        raise ValueError("Reflection padding must be smaller than the input")
+    index = torch.arange(-padding, size+padding, device=values.device)
+    index = torch.where(index < 0, -index, index)
+    index = torch.where(index >= size, 2*size-2-index, index)
+    return values.index_select(-1, index)
+
+
+def linear_upsample(values, samples):
+    """Align-corners linear interpolation without atomic CUDA backward kernels."""
+    position = torch.arange(samples, device=values.device, dtype=values.dtype) * ((values.shape[-1]-1)/(samples-1))
+    low = position.floor().long().clamp(max=values.shape[-1]-1)
+    high = (low+1).clamp(max=values.shape[-1]-1)
+    weight = (position-low).clamp(0, 1)
+    return values.index_select(-1, low)*(1-weight) + values.index_select(-1, high)*weight
+
+
 def mel(hz):
     return 2595 * torch.log10(1 + hz / 700)
 
@@ -55,7 +75,7 @@ class Synthesizer(nn.Module):
         if samples < N_FFT:
             raise ValueError("Synthesis needs at least five frames")
         def upsample(values):
-            return F.interpolate(values[:, None], size=samples, mode="linear", align_corners=True)[:, 0]
+            return linear_upsample(values, samples)
         f0 = upsample(controls[:, :, 0].clamp(math.log(55), math.log(750)).exp())
         voicing = upsample(controls[:, :, 1].sigmoid())
         energy = upsample(controls[:, :, 2].clamp(-12, 0).exp())
@@ -86,10 +106,11 @@ class Synthesizer(nn.Module):
         harmonic_filter = minimum_phase((harmonic_log-center).clamp(-12, 0)).transpose(1, 2)
         noise_filter = minimum_phase((noise_log-center).clamp(-12, 0)).transpose(1, 2)
         def stft(wave):
-            return torch.stft(wave, N_FFT, HOP, window=self.window, return_complex=True)
+            return torch.stft(reflect_pad(wave, N_FFT//2), N_FFT, HOP, window=self.window,
+                              return_complex=True, center=False)
         spectrum = stft(pulse)*harmonic_filter + stft(noise)*noise_filter
         wave = torch.istft(spectrum, N_FFT, HOP, window=self.window, length=samples)
-        rms = F.avg_pool1d(F.pad(wave[:, None].square(), (N_FFT//2, N_FFT//2), mode="reflect"),
+        rms = F.avg_pool1d(reflect_pad(wave[:, None].square(), N_FFT//2),
                            N_FFT, HOP)[:, 0].clamp_min(1e-8).sqrt()
         # Smooth gain avoids dependence on arbitrary input amplitude calibration.
         output = wave * (energy / upsample(rms).clamp_min(1e-4)).clamp(max=100)
@@ -101,8 +122,8 @@ def spectral_loss(prediction, target):
     for size in (256, 512, 1024, 2048):
         window = torch.hann_window(size, device=prediction.device)
         def magnitude(wave):
-            return torch.stft(wave.float(), size, size//4, window=window,
-                              return_complex=True).abs().clamp_min(1e-5)
+            return torch.stft(reflect_pad(wave.float(), size//2), size, size//4, window=window,
+                              return_complex=True, center=False).abs().clamp_min(1e-5)
         pred, ref = magnitude(prediction), magnitude(target)
         convergence = (pred-ref).norm(dim=(-2,-1)) / ref.norm(dim=(-2,-1)).clamp_min(1e-5)
         losses.append(convergence.mean() + (pred.log()-ref.log()).abs().mean())

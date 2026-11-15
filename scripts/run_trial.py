@@ -69,6 +69,8 @@ def main():
         command += ['--'+key.replace('_','-'), str(config[key])]
     if config.get('wave_pitch_grad'):
         command.append('--wave-pitch-grad')
+    if config.get('nondeterministic'):
+        command.append('--nondeterministic')
     try:
         subprocess.run([sys.executable, 'scripts/session_job.py', '--name', name+'-training',
                         '--timeout-seconds', str(args.timeout_seconds), '--', *command], check=True)

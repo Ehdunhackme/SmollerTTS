@@ -54,6 +54,20 @@ Use `scripts/session_job.py --name <unique-name> --timeout-seconds <seconds> -- 
 to record and supervise a job. Each training run stores its actual source snapshot,
 configuration, seed, data fingerprint, checkpoints, metrics and five-language samples.
 
+New training checkpoints include optimizer, schedule position, Python/NumPy/PyTorch
+random state and exact feature/source identities. Recover an interrupted run into
+a new directory with the same recipe and total step budget, adding
+`--resume runs/<interrupted-run>/latest.pt`. Inherited steps and training time remain
+in the record. Older debug checkpoints lack this recovery state and are rejected
+instead of being silently treated as resumable. Milestones are retained every
+10,000 steps; the latest checkpoint is also saved at every evaluation.
+
+Training uses deterministic GPU kernels by default. The renderer's reflection and
+linear interpolation have equivalent indexing implementations so their CUDA
+gradients support this. A 100-step A100 test with real data, waveform loss and two
+prefetch workers matched an uninterrupted run exactly after recovery at step 50.
+`--nondeterministic` is an explicit opt-out and is recorded in the run.
+
 The initial native frontend uses MFA dictionaries and eSpeak NG stress annotations.
 It supports new sentences made from known words and reports unknown words explicitly.
 Number normalization, pronunciation of unknown dictionary words and the final

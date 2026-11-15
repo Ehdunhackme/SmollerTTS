@@ -25,6 +25,11 @@ Updated 15 November 2026. This is an early research implementation, not a releas
   Short examples generated faster than real time on this PC; see docs/browser-validation.md.
 - CPU feature prefetch passed a 600-step server check after fixing retained shared
   tensor file descriptors. Every batch still contains all five languages.
+- Exact training recovery passed a CPU integration test and a 100-step A100 test
+  using real recordings, waveform loss and two loader workers. Recovery after step
+  50 produced zero maximum weight difference and identical random states. GPU
+  determinism required replacing nondeterministic renderer padding/interpolation
+  gradients with equivalent indexing. Browser DSP parity still passes.
 - The compact browser pronunciation format preserves all 487,131 dictionary entries.
   Retesting passed for all five languages online/offline. Application assets fell
   from 58.97 MB to 35.28 MB raw; measured Chromium private memory fell from 683 MB
@@ -68,6 +73,7 @@ Inspect those records together with the live process table; a stale JSON file is
 - `runs/lexicon-augmentation`: completed full corpus pronunciation preparation.
 - `runs/full-data-preparation`: waits on that exact process, then aligns and caches full train/dev data.
 - `runs/full-baseline-pipeline`: waits on the exact full-data job, audits it, then trains the baseline.
+- `runs/gpu-recovery-deterministic-v2`: successful A100 recovery verification.
 - `runs/frozen-debug-evaluation`: completed the first fixed text-input evaluation.
 - `runs/overfit-five-clips`: stronger memorization diagnostic, one training clip per language.
 - `runs/debug-train-v1`, `runs/debug-train-v2`: completed scratch training runs.
