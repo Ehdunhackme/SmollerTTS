@@ -32,6 +32,10 @@ Updated 15 November 2026. This is an early research implementation, not a releas
 - A frozen 100-sentence text-input development evaluator now hashes its protocol,
   dictionary/vocabulary assets and exact ASR weights. Its first debug-model evaluation
   completed and confirms poor speech; see docs/evaluation-protocol.md for all results.
+- A five-clip memorization run completed 5,000 steps (one recording per language).
+  Its English training sentence had zero ASR word error; Mandarin and French matched
+  the reference recordings' ASR errors. Spanish/German remained worse than reference.
+  This confirms learning on the tiny set, not unseen-text quality.
 - A fitted-control renderer diagnostic produced finite audio in all languages; a small ASR panel matched
   the reference-recording error rates after fitting. This is reconstruction evidence, not TTS quality evidence.
 - Corrected debug alignment/feature cache has 200 clips, 40 per language: 32 train and 8 dev each.
@@ -51,6 +55,8 @@ Updated 15 November 2026. This is an early research implementation, not a releas
   Unknown words and digits produce explicit errors; broader pronunciation and number handling remain.
 - Browser DSP and the local UI work with the debug checkpoint. Final quality evaluation,
   calibrated automatic experiment selection and publication are not complete.
+- The one-change trial runner has CLI/syntax checks only. It requires a completed
+  full-data baseline and matching fixed evaluation; no broad search has started.
 - Final-test data have not been used for tuning or model evaluation.
 
 ## Runtime records

@@ -59,3 +59,16 @@ quality. The protocol is now available for comparison with the proper baseline.
 
 The first command creates `evaluation/dev-v1.json` once and refuses to overwrite it.
 Keep it with the experiment artifacts. All results retain the panel's SHA256 hash.
+
+## Recorded trials
+
+`scripts/run_trial.py` runs one declared hypothesis after a complete full-data
+baseline and matching evaluation exist. A specification names one change among
+learning rate, width, spectral-loss weight and spectral-loss warmup. It verifies
+the incumbent checkpoint/panel hashes, uses random initialization with the same
+seed, optimizer-step count and batch composition, then exports and evaluates the
+candidate. It preserves both models and appends the outcome to an experiment ledger.
+
+The same step count is a matched data/optimizer budget, not identical GPU cost;
+the record includes both measured training times. No broad trial has started yet.
+This runner has passed CLI/syntax checks but awaits its first actual full-data trial.
