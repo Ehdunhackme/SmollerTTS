@@ -5,6 +5,7 @@ operations. Export parity does not establish browser compatibility or voice qual
 """
 import argparse
 from dataclasses import asdict
+import hashlib
 import json
 from pathlib import Path
 import numpy as np
@@ -90,10 +91,16 @@ def main():
             maximum = max(maximum, float(np.max(np.abs(actual-expected))))
     report = dict(status="native ONNX CPU parity passed; browser DSP integration pending",
                   trained_checkpoint=str(args.checkpoint) if args.checkpoint else None,
+                  checkpoint_sha256=hashlib.sha256(args.checkpoint.read_bytes()).hexdigest() if args.checkpoint else None,
+                  training_step=state['step'] if args.checkpoint else 0,
+                  training_seed=state['seed'] if args.checkpoint else None,
+                  feature_identity=state.get('feature_identity') if args.checkpoint else None,
+                  training_identity=state.get('training_identity') if args.checkpoint else None,
                   model_parameters=model.parameter_count, renderer_parameters=0,
                   config=asdict(model.config), maximum_absolute_error=maximum,
                   checked_languages=5, checked_phone_lengths=[7, 19],
-                  files={path.name:path.stat().st_size for path in args.output.glob("*.onnx")})
+                  files={path.name:path.stat().st_size for path in args.output.glob("*.onnx")},
+                  sha256={path.name:hashlib.sha256(path.read_bytes()).hexdigest() for path in args.output.glob("*.onnx")})
     atomic_json(args.output/"export.json", report)
     print(json.dumps(report, indent=2))
 

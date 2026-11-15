@@ -63,3 +63,11 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
 fetch(new URL('asset-report.json', base)).then(response => response.ok ? response.json() : null).then(report => {
   if (report) $('#assets').textContent = `${(report.neuralGraphBytes / 1e6).toFixed(2)} MB of neural graphs. ${(report.uncompressedBytes / 1e6).toFixed(2)} MB for all uncompressed app assets, including pronunciation tables and the CPU runtime.`;
 }).catch(() => {});
+fetch(new URL('model/export.json', base)).then(response => {
+  if (!response.ok) throw new Error('Model metadata unavailable');
+  return response.json();
+}).then(report => {
+  const total = report.model_parameters + report.renderer_parameters;
+  if (!Number.isSafeInteger(total) || total <= 0 || total >= 1_000_000) throw new Error('Invalid parameter count');
+  $('#parameter-count').textContent = `${total.toLocaleString('en-US')} learned parameters`;
+}).catch(() => { $('#parameter-count').textContent = 'Parameter count unavailable; one model'; });

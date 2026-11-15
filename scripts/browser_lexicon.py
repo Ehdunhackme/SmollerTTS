@@ -3,6 +3,7 @@
 Uses train/dev pronunciation dictionaries only. It never reads final-test text.
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import struct
@@ -66,7 +67,10 @@ def main():
         inputs, pronunciations = frontend(EXAMPLES[language])
         fixtures.append(dict(language=language, text=EXAMPLES[language],
                              **{key: value.tolist() for key, value in inputs.items() if key != 'language'}))
-    atomic_json(args.output/'frontend.json', dict(vocabulary=vocab, vowels=[vocab[p] for p in vocab if is_vowel(p)],
+    atomic_json(args.output/'frontend.json', dict(vocabulary=vocab,
+                                               vocabulary_sha256=hashlib.sha256(args.vocabulary.read_bytes()).hexdigest(),
+                                               lexicon_sha256={language:hashlib.sha256(dictionary_path(args.root, language).read_bytes()).hexdigest() for language in LANGUAGES},
+                                               vowels=[vocab[p] for p in vocab if is_vowel(p)],
                                                languages=list(LANGUAGES), examples=EXAMPLES))
     atomic_json(args.output/'frontend-parity.json', fixtures)
     atomic_json(args.output/'lexicon-report.json', report)

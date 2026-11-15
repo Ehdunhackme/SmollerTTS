@@ -2,7 +2,12 @@ import json
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-fixtures = json.loads(Path('artifacts/browser-neural-fixture.json').read_text())
+fixture_record = json.loads(Path('artifacts/browser-neural-fixture.json').read_text())
+fixtures = fixture_record['fixtures']
+exported = json.loads(Path('web/public/model/export.json').read_text())
+if exported.get('checkpoint_sha256'):
+    assert exported['checkpoint_sha256'] == fixture_record['checkpoint_sha256'], 'Fixture and deployed weights differ'
+assert len(fixtures) == 10, 'Require both lengths for every language'
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True, args=['--disable-gpu'])
     page = browser.new_page()
@@ -23,6 +28,8 @@ with sync_playwright() as p:
         const controls = await decoder.run({encoded: encoded.encoded,
           ...Object.fromEntries(['frame_indices','positions','frame_mask'].map(key => [key,tensor(fixture[key])]))});
         for (const [key, value] of Object.entries({...encoded,...controls})) {
+          if (JSON.stringify(value.dims) !== JSON.stringify(fixture[key].shape) || value.data.length !== fixture[key].values.length)
+            throw new Error('Neural output shape changed: ' + key);
           let maximum = 0, scaledMaximum = 0;
           for (let i = 0; i < value.data.length; i++) {
             const delta = Math.abs(value.data[i] - fixture[key].values[i]);
@@ -34,6 +41,9 @@ with sync_playwright() as p:
       }
       return {backend:'wasm-cpu', errors};
     }''', fixtures)
+    report.update(checkpoint_sha256=fixture_record['checkpoint_sha256'],
+                  exported_identity_verified=bool(exported.get('checkpoint_sha256')),
+                  parameters=fixture_record['parameters'], cases=len(fixtures))
     print(json.dumps(report, indent=2))
     assert max(item['scaledMaximum'] for item in report['errors']) < 1
     Path('artifacts/browser/neural-parity.json').write_text(json.dumps(report, indent=2))

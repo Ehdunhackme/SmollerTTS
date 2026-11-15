@@ -83,14 +83,17 @@ including an offline reload and all five languages. It uses the shared trained d
 checkpoint, a WASM CPU neural runtime and JavaScript DSP. This proves deployment
 feasibility, not speech quality. See [browser validation](docs/browser-validation.md).
 
-Prepare model assets on the server (choose the intended checkpoint and vocabulary):
+Prepare matching model and pronunciation assets on the server (choose the intended
+checkpoint and its exact feature cache):
 
 ```bash
-.venv/bin/python -m xiaotts.export --checkpoint runs/debug-train-v2/latest.pt --output artifacts/browser-model
-.venv/bin/python -m scripts.browser_lexicon --vocabulary data/features/debug-augmented/vocabulary.json --output artifacts/browser-model
+.venv/bin/python -m scripts.package_browser_model --checkpoint runs/full-baseline-v1/latest.pt --features data/features/full --output artifacts/browser-model
 ```
 
-Copy those output files into `web/public/model/` in the local checkout, then:
+The packaging command verifies checkpoint/feature identities and records hashes
+for every exported asset. Use a finished, selected checkpoint for the final demo;
+the current prototype still uses an older debug model. Copy the matching bundle
+into `web/public/model/` in the local checkout, then:
 
 ```bash
 cd web
