@@ -3,8 +3,8 @@
 An experimental shared TTS model for English, Mandarin, Spanish, French and German,
 trained from random initialization with fewer than **1,000,000 learned inference parameters**.
 
-**Status: all five corpora downloaded; shared prototype training and full-data
-preparation are running. The model is not ready for use.** The neural network has
+**Status: all five corpora downloaded and aligned; full feature caching is running.
+The local browser prototype works, but speech quality is still poor.** The neural network has
 757,828 parameters and the differentiable waveform renderer has zero learned parameters.
 
 The first version targets one recorded voice per language. Mandarin tones and
@@ -45,7 +45,7 @@ the training server.
 .venv/bin/python -m xiaotts.alignment --limit 0 --label full --parallel-languages 2 --jobs 6
 .venv/bin/python -m xiaotts.features --label full --workers 8
 # A run directory must be new; all five languages are required in every batch.
-.venv/bin/python -m xiaotts.train --features data/features/full --output runs/baseline-v1 --steps 50000
+.venv/bin/python -m xiaotts.train --features data/features/full --output runs/baseline-v1 --steps 50000 --workers 4
 .venv/bin/python -m xiaotts.export --checkpoint runs/baseline-v1/latest.pt --output artifacts/baseline-export
 ```
 
@@ -56,9 +56,43 @@ configuration, seed, data fingerprint, checkpoints, metrics and five-language sa
 
 The initial native frontend uses MFA dictionaries and eSpeak NG stress annotations.
 It supports new sentences made from known words and reports unknown words explicitly.
-Number normalization, arbitrary-word browser pronunciation, browser DSP and the final
+Number normalization, pronunciation of unknown dictionary words and the final
 benchmark harness are still outstanding. Debug samples generated from alignment
 phonemes are labeled as such; they do not establish arbitrary-text performance.
+
+## Local browser demo
+
+The complete text-to-audio path has been tested in Chromium with the GPU disabled,
+including an offline reload and all five languages. It uses the shared trained debug
+checkpoint, a WASM CPU neural runtime and JavaScript DSP. This proves deployment
+feasibility, not speech quality. See [browser validation](docs/browser-validation.md).
+
+Prepare model assets on the server (choose the intended checkpoint and vocabulary):
+
+```bash
+.venv/bin/python -m xiaotts.export --checkpoint runs/debug-train-v2/latest.pt --output artifacts/browser-model
+.venv/bin/python -m scripts.browser_lexicon --vocabulary data/features/debug-augmented/vocabulary.json --output artifacts/browser-model
+```
+
+Copy those output files into `web/public/model/` in the local checkout, then:
+
+```bash
+cd web
+npm ci
+npm run build
+npm run preview
+```
+
+Open the localhost URL printed by Vite. The production build caches all five
+languages for offline use. `npm run dev` does not install that offline cache.
+`dist/asset-report.json` records asset hashes and raw sizes; the supporting runtime
+and dictionaries are substantially larger than the 3.07 MB neural graphs.
+No public website or model release has been published.
+
+For reproducible validation, run `python -m scripts.browser_fixture` from the repo
+root, followed by `npm --prefix web test`. With the production preview running,
+`python -X utf8 scripts/browser_test.py` exercises generation, errors, mobile layout
+and offline reload. Browser evidence is saved under `artifacts/browser/`.
 
 ## Research gates
 

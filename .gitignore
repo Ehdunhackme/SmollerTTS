@@ -15,3 +15,7 @@ logs/
 .mamba/
 *.tar.gz
 *.zip
+web/node_modules/
+web/dist/
+web/public/model/
+web/public/runtime/

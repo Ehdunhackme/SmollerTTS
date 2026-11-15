@@ -16,6 +16,15 @@ Updated 15 November 2026. This is an early research implementation, not a releas
 - Random-weight ONNX encoder/decoder passed native CPU parity over all five language IDs and two new
   sequence lengths. Maximum absolute error was 2.87e-6. This is not a browser test.
 - The trained 4,000-step checkpoint also passed native ONNX CPU parity checks.
+- Actual browser WASM neural parity passed across all five language IDs and two
+  sequence lengths, within atol=2e-5/rtol=2e-4 (largest absolute error 4.06e-5).
+- Browser DSP filtering matches PyTorch with maximum waveform error 2.69e-7 on
+  identical excitation; the harmonic source also passed a separate parity check.
+- Local Chromium generated actual text in all five languages with GPU disabled,
+  then repeated all five after an offline reload. No external requests or page errors.
+  Short examples generated faster than real time on this PC; see docs/browser-validation.md.
+- CPU feature prefetch passed a 600-step server check after fixing retained shared
+  tensor file descriptors. Every batch still contains all five languages.
 - A fitted-control renderer diagnostic produced finite audio in all languages; a small ASR panel matched
   the reference-recording error rates after fitting. This is reconstruction evidence, not TTS quality evidence.
 - Corrected debug alignment/feature cache has 200 clips, 40 per language: 32 train and 8 dev each.
@@ -28,12 +37,13 @@ Updated 15 November 2026. This is an early research implementation, not a releas
   recognition errors. These tiny panels cannot support benchmark or naturalness claims.
 - The first renderer gradient implementation destabilized predicted pitch. The current training path
   supervises pitch directly and detaches it from the oscillator's spectral gradient by default.
-- Full-corpus OOV pronunciation generation completed; full train/dev alignment is running, with
-  acoustic feature caching next. Full-data baseline training has not begun.
-- Native pronunciation currently uses dictionaries and an external eSpeak NG stress annotator.
-  Unknown words and digits produce explicit errors; browser G2P/number handling remains outstanding.
-- Browser DSP, browser UI, final evaluation, calibrated automatic experiment selection and publication
-  are not complete. Only the neural graph has passed native ONNX compatibility checks.
+- Full-corpus OOV pronunciation generation and full train/dev alignment completed.
+  Acoustic feature caching is running. A verified dependent job audits all languages
+  and starts the 50,000-step baseline when caching succeeds; training has not begun yet.
+- Native and browser pronunciation use dictionaries with explicit stress/tones.
+  Unknown words and digits produce explicit errors; broader pronunciation and number handling remain.
+- Browser DSP and the local UI work with the debug checkpoint. Final quality evaluation,
+  calibrated automatic experiment selection and publication are not complete.
 - Final-test data have not been used for tuning or model evaluation.
 
 ## Runtime records
@@ -44,6 +54,7 @@ Inspect those records together with the live process table; a stale JSON file is
 
 - `runs/lexicon-augmentation`: completed full corpus pronunciation preparation.
 - `runs/full-data-preparation`: waits on that exact process, then aligns and caches full train/dev data.
+- `runs/full-baseline-pipeline`: waits on the exact full-data job, audits it, then trains the baseline.
 - `runs/debug-train-v1`, `runs/debug-train-v2`: completed scratch training runs.
 - `runs/debug-asr-v1`, `runs/debug-asr-v2`: completed development diagnostics.
 - `artifacts/export-smoke-v2`: native ONNX parity report.

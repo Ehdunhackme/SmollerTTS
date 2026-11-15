@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#edf2f7"><title>XiaoTTS — a small voice experiment</title></head>
+<body>
+  <main>
+    <header><a class="wordmark" href="./" aria-label="XiaoTTS home">小 <span>XiaoTTS</span></a><a href="https://github.com/Ehdunhackme/XiaoTTS" target="_blank" rel="noreferrer">Source code</a></header>
+    <h1>One small model.<br>Five languages.</h1>
+    <p class="intro">A tiny voice experiment, running on your CPU.</p>
+    <div class="notice"><strong>Early checkpoint.</strong> Speech is still rough and can be hard to understand. This demo is for testing the system while training improves.</div>
+    <section class="instrument" aria-label="Speech generator">
+      <form id="speech-form">
+        <fieldset id="languages"><legend>Choose a language</legend>
+          <label><input type="radio" name="language" value="en" checked><span>English</span></label>
+          <label><input type="radio" name="language" value="zh"><span lang="zh">中文</span></label>
+          <label><input type="radio" name="language" value="es"><span lang="es">Español</span></label>
+          <label><input type="radio" name="language" value="fr"><span lang="fr">Français</span></label>
+          <label><input type="radio" name="language" value="de"><span lang="de">Deutsch</span></label>
+        </fieldset>
+        <label class="text-label" for="sentence">What should it say?</label>
+        <textarea id="sentence" maxlength="240" rows="5" spellcheck="false">The little bird is singing in the garden.</textarea>
+        <div class="editor-footer"><button type="button" id="example" class="quiet">Use example</button><span id="character-count">40 / 240</span></div>
+        <div class="form-bottom"><p>One voice per language.<br>For now, spell out numbers.</p><button id="generate" type="submit" disabled>Loading model…</button></div>
+      </form>
+      <div class="monitor">
+        <div class="monitor-heading"><h2>Your audio</h2><span id="duration">—</span></div>
+        <div class="wave-area"><canvas id="waveform" aria-label="Generated audio waveform"></canvas><p id="empty-audio">Your sentence will appear here as sound.</p></div>
+        <audio id="player" controls aria-label="Play generated speech" hidden></audio>
+        <div class="audio-footer"><span id="audio-language">No audio generated</span><a id="download" hidden download="xiaotts.wav">Save WAV</a></div>
+        <p id="status" role="status" aria-live="polite">Loading the local speech model…</p>
+      </div>
+    </section>
+    <div class="notes"><p id="performance">Generation time will appear after your first sentence.</p><p id="offline-status">Preparing offline assets…</p></div>
+    <details><summary>About this experiment</summary><div class="about"><p>757,828 learned parameters shared across English, Mandarin, Spanish, French and German. The voice model is trained from scratch on existing recordings. A fixed audio synthesizer turns its predictions into sound.</p><p id="assets">Model weights and supporting assets are measured separately.</p><p>Pronunciation uses MFA dictionaries and eSpeak NG through ephone. Unknown dictionary words currently produce an error. Text stays on this device; there is no speech server.</p><p><a href="./runtime/ephone-GPL-3.0.txt">ephone / eSpeak NG license</a> · <a href="./runtime/onnxruntime-LICENSE.txt">ONNX Runtime license</a> · <a href="https://github.com/MontrealCorpusTools/mfa-models">Pronunciation dictionary attribution</a></p></div></details>
+    <footer>Built by Dun Li <span>A work in progress</span></footer>
+  </main>
+  <script type="module" src="/src/main.mjs"></script>
+</body>
+</html>

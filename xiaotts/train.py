@@ -18,6 +18,7 @@ import numpy as np
 import soundfile as sf
 import torch
 from torch.nn import functional as F
+from torch.utils.data import DataLoader, Dataset
 
 from xiaotts import LANGUAGES
 from xiaotts.dsp import Synthesizer, spectral_loss, SAMPLE_RATE, HOP
@@ -32,7 +33,7 @@ def read_features(path):
         return {key: torch.from_numpy(np.array(source[key])) for key in source.files}
 
 
-def collate(rows, device):
+def collate(rows, device=None):
     items = [read_features(row["features"]) for row in rows]
     batch = len(items)
     phones = max(len(item["tokens"]) for item in items)
@@ -50,7 +51,29 @@ def collate(rows, device):
         indices, positions = expand_durations(item["durations"])
         output["indices"][b, :t], output["positions"][b, :t] = indices, positions
         output["mask"][b, :t], output["controls"][b, :t] = 1, item["controls"]
-    return {key: value.to(device) for key, value in output.items()}, items
+    return ({key: value.to(device) for key, value in output.items()} if device else output), items
+
+
+class BalancedSteps(Dataset):
+    """Reproducible per-step draws, independent of loader worker scheduling."""
+    def __init__(self, training, steps, seed, per_language=1):
+        self.training, self.steps, self.seed, self.per_language = training, steps, seed, per_language
+
+    def __len__(self):
+        return self.steps
+
+    def __getitem__(self, index):
+        rng = random.Random(self.seed + index * 1000003)
+        rows = [rng.choice(self.training[language]) for _ in range(self.per_language) for language in LANGUAGES]
+        batch, items = collate(rows)
+        # Do not share cached feature storages across process boundaries: every
+        # retained shared tensor holds a file descriptor on Linux. Clone only the
+        # waveforms needed by the trainer; the padded batch is already fresh.
+        return batch, [dict(frames=len(item["controls"]), waveform=item["waveform"].clone()) for item in items]
+
+
+def initialize_worker(worker_id):
+    torch.set_num_threads(1)
 
 
 def acoustic_loss(duration, controls, batch):
@@ -120,6 +143,8 @@ def main():
     parser.add_argument("--spectral-start", type=int, default=200)
     parser.add_argument("--wave-frames", type=int, default=128)
     parser.add_argument("--wave-weight", type=float, default=0.15)
+    parser.add_argument("--workers", type=int, default=0, help="CPU feature prefetch workers")
+    parser.add_argument("--per-language", type=int, default=1, help="Clips per language in every batch")
     parser.add_argument("--wave-pitch-grad", action="store_true",
                         help="Experimental: backpropagate spectral loss through oscillator phase")
     args = parser.parse_args()
@@ -142,6 +167,13 @@ def main():
     if any(not training[language] or not any(row["language"] == language for row in development)
            for language in LANGUAGES):
         raise ValueError("All five languages require training and development data")
+    if args.workers < 0 or args.per_language < 1:
+        raise ValueError("Invalid loader worker or batch count")
+    loader_options = dict(num_workers=args.workers, batch_size=None, pin_memory=device == "cuda",
+                          worker_init_fn=initialize_worker)
+    if args.workers:
+        loader_options.update(persistent_workers=True, prefetch_factor=2, multiprocessing_context="spawn")
+    loader = iter(DataLoader(BalancedSteps(training, args.steps, args.seed, args.per_language), **loader_options))
     config = ModelConfig(width=args.width)
     model = XiaoTTS(config).to(device)
     renderer = Synthesizer().to(device)
@@ -167,14 +199,17 @@ def main():
         torch.save(dict(model=model.state_dict(), optimizer=optimizer.state_dict(), config=asdict(config),
                         step=step, seed=args.seed, feature_hash=state["features"]["source_hash"]), temporary)
         os.replace(temporary, args.output/"latest.pt")
-    started, last_step = time.monotonic(), 0
+    started, last_step, data_wait_seconds = time.monotonic(), 0, 0.0
     fixed_samples = [next(row for row in development if row["language"] == language) for language in LANGUAGES]
     model.train()
     with (args.output/"metrics.jsonl").open("a", buffering=1) as metrics:
         for step in range(1, args.steps+1):
             if stop or time.time() >= (args.deadline or float("inf"))-45:
                 break
-            batch, items = collate([random.choice(training[language]) for language in LANGUAGES], device)
+            loading = time.monotonic()
+            batch, items = next(loader)
+            data_wait_seconds += time.monotonic()-loading
+            batch = {key: value.to(device, non_blocking=True) for key, value in batch.items()}
             scale = min(step/100, 1)*(0.2+0.8*(1+math.cos(math.pi*step/args.steps))/2)
             for group in optimizer.param_groups:
                 group["lr"] = args.lr*scale
@@ -183,10 +218,10 @@ def main():
                                        batch["indices"], batch["positions"], batch["mask"])
             loss, parts = acoustic_loss(duration, controls, batch)
             if step >= args.spectral_start:
-                length = min(args.wave_frames, min(len(item["controls"]) for item in items))
+                length = min(args.wave_frames, min(item["frames"] for item in items))
                 predicted_crops, targets = [], []
                 for index, item in enumerate(items):
-                    start = random.randint(0, len(item["controls"])-length)
+                    start = random.randint(0, item["frames"]-length)
                     crop = controls[index, start:start+length]
                     if step < args.spectral_start+300:
                         crop = torch.cat((batch["controls"][index, start:start+length, :2], crop[:, 2:]), -1)
@@ -210,6 +245,7 @@ def main():
             if step % 25 == 0 or step == 1:
                 record = dict(step=step, loss=float(loss), grad_norm=float(norm),
                               elapsed=time.monotonic()-started,
+                              data_wait_seconds=data_wait_seconds,
                               **{key: float(value) for key,value in parts.items()})
                 metrics.write(json.dumps(record)+"\n")
                 print(json.dumps(record), flush=True)
@@ -223,6 +259,7 @@ def main():
         checkpoint(last_step)
         state.update(status="finished" if last_step == args.steps else "stopped", step=last_step,
                      elapsed=time.monotonic()-started, finished=time.time(),
+                     data_wait_seconds=data_wait_seconds,
                      peak_cuda_allocated_bytes=torch.cuda.max_memory_allocated() if device == "cuda" else 0)
         atomic_json(args.output/"run.json", state)
 

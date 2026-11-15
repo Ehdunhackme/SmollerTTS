@@ -47,7 +47,7 @@ class Synthesizer(nn.Module):
         self.register_buffer("harmonic_matrix", band_matrix(HARMONIC_BANDS), persistent=False)
         self.register_buffer("noise_matrix", band_matrix(NOISE_BANDS), persistent=False)
 
-    def forward(self, controls, seed=None):
+    def forward(self, controls, seed=None, excitation=None, return_excitation=False):
         # FFT and phase accumulation remain float32 even during mixed precision training.
         controls = controls.float()
         batch, frames, _ = controls.shape
@@ -73,6 +73,12 @@ class Synthesizer(nn.Module):
         if seed is not None:
             generator = torch.Generator(device=f0.device).manual_seed(seed)
         noise = torch.randn(batch, samples, device=f0.device, generator=generator)
+        # Supplying both sources isolates the filter/OLA path in browser parity
+        # tests. Normal inference/training always uses the sources above.
+        if excitation is not None:
+            pulse, noise = excitation
+            if pulse.shape != (batch, samples) or noise.shape != pulse.shape:
+                raise ValueError("Excitation must match the synthesized sample count")
         harmonic_log = controls[:, :, 3:43] @ self.harmonic_matrix.T
         noise_log = controls[:, :, 43:67] @ self.noise_matrix.T
         # Relative filter levels preserve harmonic/noise balance; energy sets total RMS.
@@ -86,7 +92,8 @@ class Synthesizer(nn.Module):
         rms = F.avg_pool1d(F.pad(wave[:, None].square(), (N_FFT//2, N_FFT//2), mode="reflect"),
                            N_FFT, HOP)[:, 0].clamp_min(1e-8).sqrt()
         # Smooth gain avoids dependence on arbitrary input amplitude calibration.
-        return wave * (energy / upsample(rms).clamp_min(1e-4)).clamp(max=100)
+        output = wave * (energy / upsample(rms).clamp_min(1e-4)).clamp(max=100)
+        return (output, pulse, noise) if return_excitation else output
 
 
 def spectral_loss(prediction, target):
