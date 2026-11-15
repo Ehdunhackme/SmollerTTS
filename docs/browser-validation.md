@@ -18,6 +18,10 @@ checks measure deployment and numerical agreement, not naturalness.
 - Native/browser pronunciation tokens, Mandarin tones, stress and segmentation
   agree on all 99 supported sentences in the 100-prompt development panel. One
   Mandarin number-normalization failure is retained in both implementations.
+- The actual offline browser also rendered the entire 100-prompt panel, preserving
+  the same one failure. All 99 successful renders had exact frontend labels, with
+  zero page errors or external requests. Its WAVs and complete asset inventory are
+  sealed under `artifacts/browser50k-dev-v1/`; browser-audio ASR scoring is pending.
 - Native PyTorch versus browser WASM encoder/decoder parity for both input lengths
   in every language (ten cases): largest absolute error 4.39e-5, within
   atol=2e-5/rtol=2e-4. Checkpoint identity and all output shapes also match.

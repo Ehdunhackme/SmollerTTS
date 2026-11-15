@@ -28,3 +28,7 @@ An initial baseline/SanoTTS panel with two sentences per language is prepared lo
 under `artifacts/listening-baseline-v1`. It has no human ratings yet. A separate
 disposable copy is used for the browser UI check; synthetic test ratings are never
 written to the human panel. Finalist listening remains pending model selection.
+
+The UI check passed in Chromium: audio loads in all five languages, saving and
+reloading preserves responses, malformed scores cannot overwrite saved ratings,
+the private mapping returns 404, and the 375px layout has no horizontal overflow.

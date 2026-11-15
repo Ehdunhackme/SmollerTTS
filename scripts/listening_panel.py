@@ -23,16 +23,16 @@ def build(args):
         raise ValueError('Use one to twenty fixed prompts per language')
     if args.output.exists():
         raise FileExistsError('Preserve existing listening panels and responses')
-    panel = json.loads(args.panel.read_text())
+    panel = json.loads(args.panel.read_text(encoding='utf-8'))
     if any(row['split'] != 'dev' for row in panel['rows']):
         raise ValueError('Listening selection uses development material only')
-    specification = json.loads(args.spec.read_text())
+    specification = json.loads(args.spec.read_text(encoding='utf-8'))
     systems = specification['systems']
     if not 2 <= len(systems) <= 4:
         raise ValueError('Compare two to four systems')
     reports = {}
     for name, system in systems.items():
-        report = json.loads(Path(system['report']).read_text())
+        report = json.loads(Path(system['report']).read_text(encoding='utf-8'))
         if report['status'] != 'finished' or report['panel_sha256'] != digest(args.panel):
             raise ValueError('Every system must have a completed evaluation on this same panel')
         reports[name] = {item['id']:item for item in report['samples']}
