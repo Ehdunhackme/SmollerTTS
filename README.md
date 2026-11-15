@@ -4,7 +4,7 @@ An experimental shared TTS model for English, Mandarin, Spanish, French and Germ
 trained from random initialization with fewer than **1,000,000 learned inference parameters**.
 
 **Status: all five corpora prepared; the 50,000-step full-data baseline is training.
-The local browser prototype works, but speech quality is still poor.** The neural network has
+The local browser prototype works; full-baseline speech evaluation is pending.** The neural network has
 757,828 parameters and the differentiable waveform renderer has zero learned parameters.
 
 The first version targets one recorded voice per language. Mandarin tones and
@@ -79,8 +79,8 @@ phonemes are labeled as such; they do not establish arbitrary-text performance.
 ## Local browser demo
 
 The complete text-to-audio path has been tested in Chromium with the GPU disabled,
-including an offline reload and all five languages. It uses the shared trained debug
-checkpoint, a WASM CPU neural runtime and JavaScript DSP. This proves deployment
+including an offline reload and all five languages. It uses the shared 10,000-step
+full-data checkpoint, a WASM CPU neural runtime and JavaScript DSP. This proves deployment
 feasibility, not speech quality. See [browser validation](docs/browser-validation.md).
 
 Prepare matching model and pronunciation assets on the server (choose the intended
@@ -92,8 +92,10 @@ checkpoint and its exact feature cache):
 
 The packaging command verifies checkpoint/feature identities and records hashes
 for every exported asset. Use a finished, selected checkpoint for the final demo;
-the current prototype still uses an older debug model. Copy the matching bundle
-into `web/public/model/` in the local checkout, then:
+the current prototype is an early checkpoint. Copy the bundle to local artifacts,
+then use `python scripts/install_browser_model.py artifacts/<bundle-directory>`.
+The installer checks every file hash and preserves the previous model and browser
+evidence before replacing `web/public/model/`. Then:
 
 ```bash
 cd web

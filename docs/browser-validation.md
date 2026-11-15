@@ -1,7 +1,9 @@
 # Browser validation, 15 November 2026
 
-Checkpoint: `debug-train-v2`, 757,828 learned parameters. This is a poor-quality
-early voice, not a final model or a naturalness benchmark.
+Checkpoint: `full-baseline-v1/step-010000.pt`, 757,828 learned parameters.
+SHA256: `6c0c9d2ae697c6f8756ef746c322000159d7ca16d404fe25977940ddeb3c9764`.
+This is an early checkpoint while the 50,000-step run continues. Its speech quality
+has not yet been established; these checks measure deployment, not naturalness.
 
 ## Tested
 
@@ -15,8 +17,9 @@ early voice, not a final model or a naturalness benchmark.
 - WAV download, explicit number-input errors, and 375px layout without horizontal overflow.
 - Native/browser pronunciation tokens, Mandarin tones and stress agreed on the five
   reference examples. This is not an exhaustive pronunciation audit.
-- Native PyTorch versus browser WASM encoder/decoder parity for all language IDs
-  and two input lengths: largest absolute error 4.06e-5, within atol=2e-5/rtol=2e-4.
+- Native PyTorch versus browser WASM encoder/decoder parity for both input lengths
+  in every language (ten cases): largest absolute error 2.44e-5, within
+  atol=2e-5/rtol=2e-4. Checkpoint identity and all output shapes also match.
 - Fixed DSP versus PyTorch with identical excitation: maximum waveform error
   2.69e-7, relative RMS error 8.71e-7. The independent harmonic oscillator's relative
   RMS error was 0.000304. Noise generators differ but implement the same distribution.
@@ -30,13 +33,13 @@ latency claim is made.
 
 | Language | Audio duration | Online generation | Offline generation |
 | --- | ---: | ---: | ---: |
-| English | 2.14 s | 0.248 s | 0.408 s |
-| Mandarin | 4.13 s | 0.308 s | 0.560 s |
-| Spanish | 2.48 s | 0.239 s | 0.385 s |
-| French | 3.07 s | 0.308 s | 0.560 s |
-| German | 2.80 s | 0.364 s | 0.384 s |
+| English | 2.16 s | 0.231 s | 0.389 s |
+| Mandarin | 3.69 s | 0.317 s | 0.542 s |
+| Spanish | 2.71 s | 0.274 s | 0.452 s |
+| French | 2.77 s | 0.260 s | 0.471 s |
+| German | 2.71 s | 0.216 s | 0.356 s |
 
-Neural graphs: 3,073,348 bytes. Versioned application assets: 35,281,833 raw bytes,
+Neural graphs: 3,073,348 bytes. Versioned application assets: 35,283,940 raw bytes,
 excluding the small generated inventory and service-worker script themselves.
 Most bytes are pronunciation dictionaries and ONNX Runtime; parameter count alone
 does not describe deployment size. Download time over the Internet has not been
@@ -48,20 +51,25 @@ packed files were verified against every source JSON entry, and the complete
 five-language online/offline test was rerun after the change.
 
 A separate Windows memory check sampled the isolated Chromium process tree every
-50 ms. Peak private committed memory was 370,716,672 bytes (blank browser:
-70,717,440 bytes); the peak sum of working sets was 501,440,512 bytes. These include
+50 ms. Peak private committed memory was 366,452,736 bytes (blank browser:
+68,005,888 bytes); the peak sum of working sets was 502,652,928 bytes. These include
 browser startup, caching, pronunciation, runtime and generation. Private committed
 bytes are not resident RAM; summing working sets can double-count shared pages.
-The preceding JSON-table build reached 683,458,560 private bytes in the same test.
+The preceding JSON-table debug build reached 683,458,560 private bytes in the same
+test procedure. This comparison includes a checkpoint change and is not a precise
+isolated estimate of the dictionary-format effect.
 
 The source version and exact generated file hashes are in the saved asset inventory.
 Raw test results, screenshots, WAV files and neural parity output are in the ignored
 `artifacts/browser/` directory. The browser model assets are also ignored by Git.
+The preceding debug model and its validation evidence are preserved under
+`artifacts/browser-model-backups/20261115T135544Z-7d31f9/`. Future installations
+must pass the checkpoint/vocabulary/file-hash checks before repeating browser QA.
 
 ## Remaining limitations
 
 - Unknown dictionary words and digits fail explicitly; users must spell numbers out.
-- Voice quality/generalization is poor. Faster-than-real-time synthesis does not
+- Earlier debug models had poor generalization. Faster-than-real-time synthesis does not
   establish intelligibility, pleasantness, Mandarin tone accuracy or benchmark rank.
 - The ephone wrapper treats isolated function words differently from the native
   annotation executable; a documented stress rule restores the tested cases.

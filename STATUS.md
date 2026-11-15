@@ -24,6 +24,10 @@ Updated 15 November 2026. This is an early research implementation, not a releas
 - Local Chromium generated actual text in all five languages with GPU disabled,
   then repeated all five after an offline reload. No external requests or page errors.
   Short examples generated faster than real time on this PC; see docs/browser-validation.md.
+- The 10,000-step full-data checkpoint is now installed in the local browser.
+  Its exact model/vocabulary identities passed packaging checks; all five languages
+  passed online/offline generation and ten native-versus-browser neural cases.
+  Model/export hashes and checkpoint identity are included in the browser evidence.
 - CPU feature prefetch passed a 600-step server check after fixing retained shared
   tensor file descriptors. Every batch still contains all five languages.
 - Exact training recovery passed a CPU integration test and a 100-step A100 test
@@ -50,8 +54,8 @@ Updated 15 November 2026. This is an early research implementation, not a releas
 
 ## Current limitations
 
-- Speech quality is still poor on unseen development sentences. Five-sentence diagnostics show large
-  recognition errors. These tiny panels cannot support benchmark or naturalness claims.
+- Earlier debug models had poor unseen-sentence quality. The full baseline's fixed
+  text-input evaluation is pending; deployment checks do not establish speech quality.
 - The first renderer gradient implementation destabilized predicted pitch. The current training path
   supervises pitch directly and detaches it from the oscillator's spectral gradient by default.
 - Full-corpus pronunciation, alignment, acoustic caching and the five-language audit
@@ -59,7 +63,7 @@ Updated 15 November 2026. This is an early research implementation, not a releas
   A dependent review job will run the frozen text-input evaluation and native export.
 - Native and browser pronunciation use dictionaries with explicit stress/tones.
   Unknown words and digits produce explicit errors; broader pronunciation and number handling remain.
-- Browser DSP and the local UI work with the debug checkpoint. Final quality evaluation,
+- Browser DSP and the local UI work with an early full-data checkpoint. Final quality evaluation,
   calibrated automatic experiment selection and publication are not complete.
 - The one-change trial runner has CLI/syntax checks only. It requires a completed
   full-data baseline and matching fixed evaluation; no broad search has started.
@@ -75,6 +79,9 @@ Inspect those records together with the live process table; a stale JSON file is
 - `runs/full-data-preparation`: completed full train/dev alignment and caching.
 - `runs/full-baseline-pipeline`: passed the data audit and is training the baseline.
 - `runs/full-baseline-review`: waits on the exact baseline job, then evaluates and exports it.
+- `runs/comparator-review`: waits on baseline review, then scores the pinned SanoTTS
+  comparison, true-control renderer reconstruction and timing/frontend diagnostics.
+- `runs/oracle-panel-render`: completed true-control reconstruction of all 100 dev rows.
 - `runs/gpu-recovery-deterministic-v2`: successful A100 recovery verification.
 - `runs/frozen-debug-evaluation`: completed the first fixed text-input evaluation.
 - `runs/overfit-five-clips`: stronger memorization diagnostic, one training clip per language.

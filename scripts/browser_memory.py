@@ -43,6 +43,7 @@ with sync_playwright() as p:
     stop.set()
     watcher.join()
     result = dict(browser=browser.version, samples=len(samples), sampling_ms=50,
+                  model=json.loads(Path('web/public/model/export.json').read_text()),
                   blank_browser_private_bytes=baseline,
                   peak_browser_tree_private_bytes=max(item['private_bytes'] for item in samples),
                   peak_summed_working_set=max(item['summed_working_set'] for item in samples),
