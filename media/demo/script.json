@@ -1,0 +1,38 @@
+{
+  "title": "SmollerTTS",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "wave_window_seconds": 6.4,
+  "wave_playhead": 0.46,
+  "intro_seconds": 0.55,
+  "gap_seconds": 0.20,
+  "outro_seconds": 1.0,
+  "pronunciations": "smoller = smaller\nmegabytes = mega bytes",
+  "clips": [
+    {
+      "text": "Hi, I'm Smoller T T S.",
+      "caption": "Hi, I’m SmollerTTS."
+    },
+    {
+      "text": "I'm a text to speech model with just two point eight one million parameters.",
+      "caption": "I’m a text-to-speech model with just\n2.81 million parameters."
+    },
+    {
+      "text": "My weights are only eleven point three four megabytes.",
+      "caption": "My weights are only 11.34 megabytes."
+    },
+    {
+      "text": "I run right here, on your browser's C P U.",
+      "caption": "I run right here, on your browser’s CPU."
+    },
+    {
+      "text": "The meeting moved to 3:30 pm on March 14th.",
+      "caption": "The meeting moved to 3:30 pm\non March 14th."
+    },
+    {
+      "text": "It costs $12.99, and we have 45 minutes left.",
+      "caption": "It costs $12.99,\nand we have 45 minutes left."
+    }
+  ]
+}

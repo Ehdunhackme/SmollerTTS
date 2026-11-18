@@ -33,6 +33,9 @@ for(const name of Object.keys(lock.files)){
 const partials=Object.fromEntries(await Promise.all(['header','footer'].map(async name=>[name,await readFile(path.join(source,'partials',name+'.html'),'utf8')])));
 for(const file of await readdir(source,{withFileTypes:true})){
   if(!file.isFile() || file.name.endsWith('.md'))continue;
+  if(/\.(png|webp|jpg|jpeg)$/i.test(file.name)){
+    await copyFile(path.join(source,file.name),path.join(output,file.name));continue;
+  }
   const name=file.name,text=await readFile(path.join(source,name),'utf8');
   if(name.endsWith('.html'))await writeFile(path.join(output,name),cacheKeys(text.replace('<!-- site-header -->',partials.header).replace('<!-- site-footer -->',partials.footer)));
   else await writeFile(path.join(output,name),name.endsWith('.mjs')?cacheKeys(text):text);
