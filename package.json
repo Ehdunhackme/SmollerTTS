@@ -1,0 +1,21 @@
+{
+  "name": "smollertts",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "setup": "node scripts/download-model.mjs",
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/serve.mjs",
+    "dev": "npm run build && npm start",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "to-words": "7.5.0"
+  },
+  "devDependencies": {
+    "vite": "8.3.8"
+  }
+}

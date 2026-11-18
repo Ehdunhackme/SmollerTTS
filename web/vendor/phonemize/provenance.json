@@ -1,0 +1,9 @@
+{
+  "package": "phonemize",
+  "version": "2.0.1",
+  "repository": "https://github.com/hans00/phonemize",
+  "license": "MIT",
+  "scope": "EnglishG2P only; lookup tables and rules, no neural weights.",
+  "bytes": 2004425,
+  "sha256": "86d3f592035008ab51e7364c2f735269312564d3300fe591da20f679f24e2347"
+}

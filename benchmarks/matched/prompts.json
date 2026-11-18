@@ -1,0 +1,247 @@
+{
+  "version": "english-48",
+  "date": "2026-11-19",
+  "selection": "48 newly written English prompts, eight in each of six categories. Frozen before synthesis; not a random population sample or a human listening study. Not used for model or frontend tuning.",
+  "records": [
+    {
+      "id": "p01",
+      "category": "Everyday",
+      "text": "Please leave the parcel beside the blue door, under the sheltered porch."
+    },
+    {
+      "id": "p02",
+      "category": "Everyday",
+      "text": "I saved your seat near the window and ordered a pot of tea."
+    },
+    {
+      "id": "p03",
+      "category": "Everyday",
+      "text": "The washing machine finished, but the towels still feel a little damp."
+    },
+    {
+      "id": "p04",
+      "category": "Everyday",
+      "text": "We can take the bus home if the rain gets any heavier."
+    },
+    {
+      "id": "p05",
+      "category": "Everyday",
+      "text": "Remember to bring your notebook, a pencil, and a bottle of water."
+    },
+    {
+      "id": "p06",
+      "category": "Everyday",
+      "text": "My sister borrowed the umbrella and forgot to return it yesterday."
+    },
+    {
+      "id": "p07",
+      "category": "Everyday",
+      "text": "There is enough soup for everyone, including the guests arriving later."
+    },
+    {
+      "id": "p08",
+      "category": "Everyday",
+      "text": "Turn the handle gently until the drawer slides all the way out."
+    },
+    {
+      "id": "p09",
+      "category": "Narration",
+      "text": "Beyond the station, a narrow path disappeared into the pine forest."
+    },
+    {
+      "id": "p10",
+      "category": "Narration",
+      "text": "The baker opened the shutters while the town was still asleep."
+    },
+    {
+      "id": "p11",
+      "category": "Narration",
+      "text": "A silver fish disturbed the surface, leaving circles in the quiet pond."
+    },
+    {
+      "id": "p12",
+      "category": "Narration",
+      "text": "By evening, the empty hall was filled with music and conversation."
+    },
+    {
+      "id": "p13",
+      "category": "Narration",
+      "text": "She unfolded the old map and traced the coastline with her finger."
+    },
+    {
+      "id": "p14",
+      "category": "Narration",
+      "text": "Nobody noticed the small red suitcase beneath the wooden bench."
+    },
+    {
+      "id": "p15",
+      "category": "Narration",
+      "text": "Clouds gathered above the hills as the last boat returned to shore."
+    },
+    {
+      "id": "p16",
+      "category": "Narration",
+      "text": "The child smiled when a paper lantern floated past the balcony."
+    },
+    {
+      "id": "p17",
+      "category": "Questions and dialogue",
+      "text": "Would you prefer the early train or the one that leaves after lunch?"
+    },
+    {
+      "id": "p18",
+      "category": "Questions and dialogue",
+      "text": "How did the spare key end up inside the kitchen cupboard?"
+    },
+    {
+      "id": "p19",
+      "category": "Questions and dialogue",
+      "text": "Are you certain that the next turning leads to the museum?"
+    },
+    {
+      "id": "p20",
+      "category": "Questions and dialogue",
+      "text": "Why does this room feel colder when the windows are closed?"
+    },
+    {
+      "id": "p21",
+      "category": "Questions and dialogue",
+      "text": "Wait! The bridge ahead is closed for repairs."
+    },
+    {
+      "id": "p22",
+      "category": "Questions and dialogue",
+      "text": "That is wonderful news! We should celebrate when you get back."
+    },
+    {
+      "id": "p23",
+      "category": "Questions and dialogue",
+      "text": "I thought you said Tuesday, but the invitation clearly says Thursday."
+    },
+    {
+      "id": "p24",
+      "category": "Questions and dialogue",
+      "text": "She asked, \"Is anybody there?\" Then she knocked on the door again."
+    },
+    {
+      "id": "p25",
+      "category": "Numbers and units",
+      "text": "The appointment is at 8:15 am on July 22nd."
+    },
+    {
+      "id": "p26",
+      "category": "Numbers and units",
+      "text": "Your total is $27.45, including the delivery charge."
+    },
+    {
+      "id": "p27",
+      "category": "Numbers and units",
+      "text": "Add 350 g of flour and 1.5 L of water to the bowl."
+    },
+    {
+      "id": "p28",
+      "category": "Numbers and units",
+      "text": "The temperature fell to 6 degrees during the night."
+    },
+    {
+      "id": "p29",
+      "category": "Numbers and units",
+      "text": "The train travels 12 km before reaching the next station."
+    },
+    {
+      "id": "p30",
+      "category": "Numbers and units",
+      "text": "Only 18% of the tickets remained after the first hour."
+    },
+    {
+      "id": "p31",
+      "category": "Numbers and units",
+      "text": "Set a timer for 2 minutes and 30 seconds."
+    },
+    {
+      "id": "p32",
+      "category": "Numbers and units",
+      "text": "There were 204 people in the audience and 16 empty seats."
+    },
+    {
+      "id": "p33",
+      "category": "Names and technical terms",
+      "text": "Amelia and Nathan will present the photographs in Edinburgh."
+    },
+    {
+      "id": "p34",
+      "category": "Names and technical terms",
+      "text": "The laboratory studies thermodynamics and the properties of ceramics."
+    },
+    {
+      "id": "p35",
+      "category": "Names and technical terms",
+      "text": "A biodegradable container should break down under suitable conditions."
+    },
+    {
+      "id": "p36",
+      "category": "Names and technical terms",
+      "text": "Check the accelerometer before starting the navigation experiment."
+    },
+    {
+      "id": "p37",
+      "category": "Names and technical terms",
+      "text": "The archaeologist carefully documented the inscription on the fragment."
+    },
+    {
+      "id": "p38",
+      "category": "Names and technical terms",
+      "text": "An electrochemical reaction supplies energy to the portable sensor."
+    },
+    {
+      "id": "p39",
+      "category": "Names and technical terms",
+      "text": "Charlotte compared the neurological findings with the earlier report."
+    },
+    {
+      "id": "p40",
+      "category": "Names and technical terms",
+      "text": "The observatory measures atmospheric pressure throughout the winter."
+    },
+    {
+      "id": "p41",
+      "category": "Long passages",
+      "text": "When the village library reopened, its shelves held far more than books. Neighbors had donated maps, musical instruments, and a collection of old photographs. The librarian invited everyone to stay for a cup of tea and tell the stories behind the objects."
+    },
+    {
+      "id": "p42",
+      "category": "Long passages",
+      "text": "We reached the campsite just before sunset, tired from the climb but pleased with the view. While one person collected water, the others prepared dinner. By the time the first stars appeared, the tents were ready and a warm meal was waiting."
+    },
+    {
+      "id": "p43",
+      "category": "Long passages",
+      "text": "The instructions seemed complicated at first, so I read them slowly and laid out every part on the table. Once the smaller pieces were in place, the rest became much easier. I checked each connection before turning the device on."
+    },
+    {
+      "id": "p44",
+      "category": "Long passages",
+      "text": "A new footpath now connects the school with the community garden. Children can walk there without crossing the busy main road. On Friday afternoons, volunteers show them how to plant vegetables, care for the soil, and recognize the insects living among the leaves."
+    },
+    {
+      "id": "p45",
+      "category": "Long passages",
+      "text": "During the storm, the lights went out across the neighborhood. We found a torch in the cupboard and used it to check on the people next door. Nobody needed help, but we stayed together until the power returned and the rain began to ease."
+    },
+    {
+      "id": "p46",
+      "category": "Long passages",
+      "text": "The first rehearsal did not go as planned. A microphone stopped working, and the piano was slightly out of tune. Instead of giving up, the musicians moved their chairs closer together and continued without the sound equipment. The result was unexpectedly intimate."
+    },
+    {
+      "id": "p47",
+      "category": "Long passages",
+      "text": "Before choosing a route, look at the weather forecast and consider how much daylight remains. The longer trail offers a better view, but it crosses exposed ground. If conditions change, return by the lower path and let someone know when you arrive."
+    },
+    {
+      "id": "p48",
+      "category": "Long passages",
+      "text": "After several attempts, the team finally found the source of the problem. A loose connector had interrupted the signal whenever the platform moved. They replaced the damaged part, repeated the experiment, and wrote down the results so the next group could reproduce the test."
+    }
+  ]
+}

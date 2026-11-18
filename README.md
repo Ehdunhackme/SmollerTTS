@@ -1,137 +1,101 @@
-# XiaoTTS
+# SmollerTTS
 
-An experimental shared TTS model for English, Mandarin, Spanish, French and German,
-trained from random initialization with fewer than **1,000,000 learned inference parameters**.
+A 2.81M-parameter English voice TTS model that runs on your browser’s CPU.
 
-**Status: the 50,000-step full-data baseline has finished, with fixed development
-evaluation and an offline browser demo. A controlled 948,164-parameter trial is
-training; repeated seeds, final-test evaluation and listening remain pending.** The baseline network has
-757,828 parameters and the differentiable waveform renderer has zero learned parameters.
+[Model weights](https://huggingface.co/dunli5107/SmollerTTS) · [Architecture](docs/model.md) · [Evaluation](docs/evaluation.md) · [Credits](THIRD_PARTY.md)
 
-The first version targets one recorded voice per language. Mandarin tones and
-European-language stress must survive the pronunciation pipeline. All five languages
-participate from the first training experiment, including debugging runs.
+SmollerTTS generates 22.05 kHz speech locally using ONNX Runtime Web. The acoustic model was trained from scratch on LJSpeech; the waveform generator uses pretrained **HiFi-GAN LJ_V2** weights. No inference server or GPU is needed.
 
-## Data
+![SmollerTTS browser demo](docs/assets/demo.webp)
 
-- English: [LJSpeech](https://keithito.com/LJ-Speech-Dataset/), public domain in the US.
-- Other four languages: [CSS10](https://github.com/Kyubyong/css10), whose linked
-  Kaggle releases list CC0. The source listing and archive hashes are saved during download.
-- Original audio is preserved. Training, development and final test passages are
-  separated before tuning. After alignment and feature checks, training retains
-  40,940 recordings and 84.63 hours; 1,048 development recordings are cached separately.
-- No synthetic speech generation. Pretrained aligners can annotate recordings;
-  their weights are not part of the deployed TTS model.
+| Component | Parameters | Download size |
+| :--- | ---: | ---: |
+| Acoustic model | 1,882,807 | 7.59 MB |
+| HiFi-GAN vocoder | 925,985 | 3.74 MB |
+| **Total neural weights** | **2,808,792** | **11.34 MB** |
 
-## Server setup
+The voice assets, including the WebAssembly runtime and pronunciation files, total about **30.14 MB** uncompressed. These are file sizes, not peak RAM usage. Weights use FP32.
 
-```bash
-bash scripts/bootstrap.sh
-python3 -m xiaotts.fetch --root data
-bash scripts/setup_aligner.sh
-```
+## Run locally
 
-Use the existing CUDA PyTorch with a separate Python environment. Forced alignment
-uses a separate conda-forge environment. Exact installed dependencies are recorded
-under `artifacts/`. Downloaded audio, checkpoints and environment files are ignored
-by Git. Source files live in the user's D-drive checkout and are synchronized to
-the training server.
+Install Node.js 22.12 or newer, then:
 
-## Implemented commands
-
-```bash
-# Freeze corpus splits after all archives have completed extraction.
-.venv/bin/python -m xiaotts.manifest
-# Complete missing dictionary entries using offline G2P, then align train/dev.
-.venv/bin/python -m xiaotts.lexicon
-.venv/bin/python -m xiaotts.alignment --limit 0 --label full --parallel-languages 2 --jobs 6
-.venv/bin/python -m xiaotts.features --label full --workers 8
-# A run directory must be new; all five languages are required in every batch.
-.venv/bin/python -m xiaotts.train --features data/features/full --output runs/baseline-v1 --steps 50000 --workers 4
-.venv/bin/python -m xiaotts.export --checkpoint runs/baseline-v1/latest.pt --output artifacts/baseline-export
-```
-
-The first full-data baseline completed in 39.06 minutes on one A100 SXM4 40 GB.
-See [baseline results](docs/baseline-results.md) for measured results and limitations.
-Use `scripts/session_job.py --name <unique-name> --timeout-seconds <seconds> -- <command>`
-to record and supervise a job. Each training run stores its actual source snapshot,
-configuration, seed, data fingerprint, checkpoints, metrics and five-language samples.
-
-New training checkpoints include optimizer, schedule position, Python/NumPy/PyTorch
-random state and exact feature/source identities. Recover an interrupted run into
-a new directory with the same recipe and total step budget, adding
-`--resume runs/<interrupted-run>/latest.pt`. Inherited steps and training time remain
-in the record. Older debug checkpoints lack this recovery state and are rejected
-instead of being silently treated as resumable. Milestones are retained every
-10,000 steps; the latest checkpoint is also saved at every evaluation.
-
-Training uses deterministic GPU kernels by default. The renderer's reflection and
-linear interpolation have equivalent indexing implementations so their CUDA
-gradients support this. A 100-step A100 test with real data, waveform loss and two
-prefetch workers matched an uninterrupted run exactly after recovery at step 50.
-`--nondeterministic` is an explicit opt-out and is recorded in the run.
-
-The initial native frontend uses MFA dictionaries and eSpeak NG stress annotations.
-It supports new sentences made from known words and reports unknown words explicitly.
-Number normalization, pronunciation of unknown dictionary words and final-test
-evaluation are still outstanding. The frozen development evaluator is implemented.
-Debug samples generated from alignment
-phonemes are labeled as such; they do not establish arbitrary-text performance.
-
-## Local browser demo
-
-The complete text-to-audio path has been tested in Chromium with the GPU disabled,
-including an offline reload and all five languages. It uses the shared 50,000-step
-full-data checkpoint, a WASM CPU neural runtime and JavaScript DSP. This proves deployment
-feasibility, not speech quality. See [browser validation](docs/browser-validation.md).
-
-Prepare matching model and pronunciation assets on the server (choose the intended
-checkpoint and its exact feature cache):
-
-```bash
-.venv/bin/python -m scripts.package_browser_model --checkpoint runs/full-baseline-v1/latest.pt --features data/features/full --output artifacts/browser-model
-```
-
-The packaging command verifies checkpoint/feature identities and records hashes
-for every exported asset. Use a finished, selected checkpoint for the final demo;
-the current prototype uses the finished baseline, pending research selection. Copy the bundle to local artifacts,
-then use `python scripts/install_browser_model.py artifacts/<bundle-directory>`.
-The installer checks every file hash and preserves the previous model and browser
-evidence before replacing `web/public/model/`. Then:
-
-```bash
-cd web
+```sh
+git clone https://github.com/Ehdunhackme/SmollerTTS.git
+cd SmollerTTS
 npm ci
+npm run setup
 npm run build
-npm run preview
+npm start
 ```
 
-Open the localhost URL printed by Vite. The production build caches all five
-languages for offline use. `npm run dev` does not install that offline cache.
-`dist/asset-report.json` records asset hashes and raw sizes; the supporting runtime
-and dictionaries are substantially larger than the 3.07 MB neural graphs. The
-current complete inventory is 33.31 MB before compression. Native stress labels
-are compiled into the pronunciation tables offline; no phonemizer runs in the browser.
-No public website or model release has been published.
+Open **http://127.0.0.1:5175/projects/smollertts/**. Setup downloads the published weights and runtime from a pinned Hugging Face revision and verifies every file’s SHA-256. Python, CUDA and a Hugging Face account are not required.
 
-For reproducible validation, run `python -m scripts.browser_fixture` from the repo
-root, followed by `npm --prefix web test`. With the production preview running,
-`python -X utf8 scripts/browser_test.py` exercises generation, errors, mobile layout
-and offline reload. Browser evidence is saved under `artifacts/browser/`.
+The demo includes chunked playback, WAV download, speed/pitch/energy controls and a pronunciation dictionary. Dates, times, money and common units are expanded before synthesis. Unfamiliar words use a phonemizer; compound splitting is limited to a small tested list so ordinary words retain their pronunciation.
 
-## Research gates
+Entered text is processed in the browser. On first load, the browser downloads model files from the server hosting the demo and caches them when storage is available.
 
-1. Validate the data and pronunciation/alignment pipeline for every language.
-2. Reconstruct real audio using fitted synthesis controls before architecture search.
-3. Overfit a small five-language subset and verify actual text inference.
-4. Train and measure a full-data baseline.
-5. Freeze the development evaluator, then run bounded, recorded experiments.
-6. Confirm finalists at matched compute with repeated seeds; evaluate locked test data.
-7. Export and measure the complete browser CPU path, including frontend and synthesis.
+## How it works
 
-The user removed the initially proposed fixed 12-hour session ceiling. Jobs retain
-explicit step budgets, optional individual timeouts, checkpointing and failure logs.
-Stopping a process does not change provider billing. Required artifacts are backed up separately.
-No public deployment, quality or benchmark leadership is implied by setup success.
+```text
+Text → normalization & phonemes → text encoder
+                                   ├─ duration prediction
+                                   └─ pitch, voicing & energy
+                                              ↓
+                                     length regulation
+                                              ↓
+                                  frame decoder → mel features
+                                              ↓
+                                     HiFi-GAN → waveform
+```
 
-Code is MIT licensed; dataset, alignment model and dictionary licenses are separate.
+The acoustic network uses four attention/convolution blocks and six small frame blocks, with a hidden width of 160. Inference is split into three ONNX graphs: encoder, frame decoder and vocoder. The demo has an interactive diagram of the complete architecture.
+
+[Model details](docs/model.md) describe the layers, parameter count and browser execution. [Training notes](docs/training.md) describe the final acoustic recipe and the scope of the included Python source.
+
+## Speech quality vs. model size (rough)
+
+On the four English prompts used by the demo’s published comparison overview, SmollerTTS scores **3.55 UTMOS** and **6.69% mean prompt WER**. The WAVs, transcripts and per-prompt results are included in [benchmarks](benchmarks/).
+
+UTMOS estimates quality; it is not human MOS. Four sentences cannot establish a reliable naturalness ranking. The chart combines our browser output with published peer scores using different voices and runtimes. A separate 48-sentence comparison and its limitations are documented in [evaluation](docs/evaluation.md).
+
+This is a compact, single-voice English model. Names, unfamiliar words and long passages can still sound unnatural or be mispronounced. Delivery controls adjust the same voice; they do not provide speaker cloning or trained emotional styles.
+
+## Development
+
+```sh
+npm test
+npm run build
+```
+
+The browser regression test checks the four benchmark WAVs, the units example, responsive layout and cached loading. With the local server running:
+
+```sh
+pip install playwright==1.64.1
+python -m playwright install chromium
+python tests/browser_smoke.py
+```
+
+- `web/` — interface, pronunciation frontend and browser inference.
+- `smollertts/` — PyTorch acoustic architecture, vocoder definition and acoustic training components.
+- `model/` — model configuration and pinned asset manifest.
+- `benchmarks/` — measurements, prompts and example audio.
+- `scripts/` — verified asset download, static build and local server.
+- `docs/` — architecture, evaluation, training and hosting notes.
+
+The build writes `dist/projects/smollertts/`. See [deployment](docs/deployment.md) for static hosting. Generated files, downloaded weights, training data and checkpoints are kept out of Git.
+
+## License & attribution
+
+Original code and acoustic weights are MIT licensed. HiFi-GAN, ONNX Runtime, pronunciation resources and the Geist font retain their own licenses and attribution; see [THIRD_PARTY.md](THIRD_PARTY.md).
+
+By [Dun Li Chan](https://dunlichan.com/).
+
+```bibtex
+@software{chan2026smollertts,
+  author = {Chan, Dun Li},
+  title = {SmollerTTS},
+  year = {2026},
+  url = {https://github.com/Ehdunhackme/SmollerTTS}
+}
+```
