@@ -2,6 +2,10 @@
 
 SmollerTTS has one English voice. Its acoustic network is custom and trained from random initialization. The vocoder is the published HiFi-GAN LJ_V2 generator with weight normalization folded into the convolution weights.
 
+[![SmollerTTS inference architecture](assets/architecture.png)](assets/architecture.svg)
+
+Read the columns from bottom to top, or [select blocks in the live diagram](https://dunlichan.com/projects/smollertts/#architecture-title).
+
 ## Acoustic network
 
 | Stage | Configuration |

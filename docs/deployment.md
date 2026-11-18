@@ -1,5 +1,8 @@
 # Static hosting
 
+The public demo is at **https://dunlichan.com/projects/smollertts/**. The following
+steps also work for hosting your own copy.
+
 Build from the repository root:
 
 ```sh
@@ -19,4 +22,4 @@ The current single-thread runtime does not require cross-origin isolation header
 
 Use revalidation for HTML and manifests so updates can be discovered. The build adds content-derived query keys to its scripts and styles; model downloads are keyed by SHA-256 and checked in the worker. Upload the full build together rather than mixing assets from different builds.
 
-Before making a hosted URL public, check a fresh browser profile, generation, WAV download, reload, mobile layout and the Credits page. This repository contains a runnable demo; publishing it to a personal domain is a separate hosting step.
+Before making a hosted URL public, check a fresh browser profile, generation, WAV download, reload, mobile layout and the Credits page.

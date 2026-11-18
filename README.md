@@ -2,7 +2,7 @@
 
 A 2.81M-parameter English voice TTS model that runs on your browser’s CPU.
 
-[Model weights](https://huggingface.co/dunli5107/SmollerTTS) · [Architecture](docs/model.md) · [Evaluation](docs/evaluation.md) · [Credits](THIRD_PARTY.md)
+[Live demo](https://dunlichan.com/projects/smollertts/) · [Model weights](https://huggingface.co/dunli5107/SmollerTTS) · [Architecture](docs/model.md) · [Evaluation](docs/evaluation.md) · [Credits](THIRD_PARTY.md)
 
 SmollerTTS generates 22.05 kHz speech locally using ONNX Runtime Web. The acoustic model was trained from scratch on LJSpeech; the waveform generator uses pretrained **HiFi-GAN LJ_V2** weights. No inference server or GPU is needed.
 
@@ -37,19 +37,9 @@ Entered text is processed in the browser. On first load, the browser downloads m
 
 ## How it works
 
-```text
-Text → normalization & phonemes → text encoder
-                                   ├─ duration prediction
-                                   └─ pitch, voicing & energy
-                                              ↓
-                                     length regulation
-                                              ↓
-                                  frame decoder → mel features
-                                              ↓
-                                     HiFi-GAN → waveform
-```
+[![SmollerTTS architecture: phoneme encoder, acoustic features and HiFi-GAN waveform decoder](docs/assets/architecture.png)](docs/assets/architecture.svg)
 
-The acoustic network uses four attention/convolution blocks and six small frame blocks, with a hidden width of 160. Inference is split into three ONNX graphs: encoder, frame decoder and vocoder. The demo has an interactive diagram of the complete architecture.
+Read each column from bottom to top. The acoustic network uses four attention/convolution blocks and six small frame blocks, with a hidden width of 160. Inference is split into three ONNX graphs: encoder, frame decoder and vocoder. Explore the blocks in the [interactive diagram](https://dunlichan.com/projects/smollertts/#architecture-title).
 
 [Model details](docs/model.md) describe the layers, parameter count and browser execution. [Training notes](docs/training.md) describe the final acoustic recipe and the scope of the included Python source.
 
