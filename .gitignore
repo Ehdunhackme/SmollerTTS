@@ -1,5 +1,6 @@
 node_modules/
 assets/model/
+assets/vocoder/
 dist/
 .venv*/
 __pycache__/

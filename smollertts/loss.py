@@ -7,9 +7,12 @@ def masked(value,mask):
     return (value*mask).sum()/mask.expand_as(value).sum().clamp_min(1)
 
 
-def training_objective(model,b):
+def acoustic_objective(model,b,recorded=True):
     e,d,p=model.encode(b['tokens'],b['stress'])
-    m,pr=model.decode_recorded(e,p,b['indices'],b['position'],b['frame_mask'],b['prosody'])
+    if recorded:
+        m,pr=model.decode_recorded(e,p,b['indices'],b['position'],b['frame_mask'],b['prosody'])
+    else:
+        m,pr=model.decode(e,p,b['indices'],b['position'],b['frame_mask'])
     target=(b['mel']-model.mel_mean)/model.mel_std
     fm=b['frame_mask'][...,0];pm=(b['tokens']!=0).float()
     ml=masked((m-target).abs(),fm)
@@ -26,3 +29,7 @@ def training_objective(model,b):
     metrics=dict(total=loss.detach(),mel_normalized=ml.detach(),mel_native=masked((m-target).abs()*model.mel_std,fm).detach(),
         duration=dl.detach(),delta=delta.detach(),prosody=pl.detach(),phone_prosody=phone.detach())
     return loss,metrics
+
+
+def training_objective(model,b):
+    return acoustic_objective(model,b,recorded=True)

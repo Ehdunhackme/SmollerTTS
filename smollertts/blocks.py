@@ -43,7 +43,7 @@ class TextBlock(nn.Module):
 
 
 def duration_indices(durations):
-    """One utterance; exact zero duration is allowed for silence, never for speech."""
+    """Expand one utterance. Alignment quantization can give a phone zero frames."""
     indices = torch.repeat_interleave(torch.arange(len(durations), device=durations.device), durations)
     starts = torch.cumsum(durations, 0)-durations
     position = (torch.arange(len(indices), device=durations.device)-starts[indices]+.5)/durations[indices].clamp_min(1)

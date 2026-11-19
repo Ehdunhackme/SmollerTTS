@@ -1,0 +1,15 @@
+{
+  "seed": 2718,
+  "steps": 10000,
+  "learning_rate": 0.0005,
+  "warmup_steps": 300,
+  "decay_half_life": 20000,
+  "betas": [0.9, 0.98],
+  "weight_decay": 0.01,
+  "gradient_clip": 5.0,
+  "max_batch": 24,
+  "frame_budget": 12000,
+  "checkpoint_every": 1000,
+  "evaluate_every": 5000,
+  "tf32": true
+}

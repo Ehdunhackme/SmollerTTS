@@ -12,6 +12,21 @@ from .blocks import duration_indices
 def item(path):
     with np.load(path,allow_pickle=False) as f:
         x={k:torch.from_numpy(f[k].copy()) for k in ('tokens','stress','durations','mel','prosody')}
+    n=len(x['tokens']);t=len(x['mel'])
+    if n<1 or t<2 or x['tokens'].shape!=(n,) or x['stress'].shape!=(n,) or x['durations'].shape!=(n,):
+        raise ValueError(f'Invalid phone arrays: {path}')
+    if any(x[k].dtype!=torch.int64 for k in ('tokens','stress','durations')):
+        raise ValueError(f'Phone IDs, stress and durations must be int64: {path}')
+    if x['mel'].shape!=(t,80) or x['prosody'].shape!=(t,3):
+        raise ValueError(f'Invalid acoustic shapes: {path}')
+    if any(x[k].dtype!=torch.float32 or not torch.isfinite(x[k]).all() for k in ('mel','prosody')):
+        raise ValueError(f'Acoustic features must be finite float32: {path}')
+    if ((x['tokens']<=0)|(x['tokens']>=132)|(x['tokens']==2)|(x['tokens']==45)).any() or ((x['stress']<0)|(x['stress']>2)).any():
+        raise ValueError(f'Unsupported phone or stress: {path}')
+    if (x['durations']<0).any() or int(x['durations'].sum())!=t:
+        raise ValueError(f'Durations do not cover every mel frame: {path}')
+    if ((x['prosody'][:,1]!=0)&(x['prosody'][:,1]!=1)).any():
+        raise ValueError(f'Recorded voicing must be binary: {path}')
     d=x['durations'];x['indices'],x['position']=duration_indices(d)
     assert len(x['indices'])==len(x['mel'])==len(x['prosody'])
     phone=torch.zeros(len(d),3);phone.index_add_(0,x['indices'],x['prosody'])

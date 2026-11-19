@@ -2,7 +2,7 @@
 
 A 2.81M-parameter English voice TTS model that runs on your browser’s CPU.
 
-[Live demo](https://dunlichan.com/projects/smollertts/) · [Model weights](https://huggingface.co/dunli5107/SmollerTTS) · [Architecture](docs/model.md) · [Evaluation](docs/evaluation.md) · [Credits](THIRD_PARTY.md)
+[Live demo](https://dunlichan.com/projects/smollertts/) · [Model weights](https://huggingface.co/dunli5107/SmollerTTS) · [Training](docs/training.md) · [Contributing](CONTRIBUTING.md) · [Architecture](docs/model.md) · [Evaluation](docs/evaluation.md) · [Credits](THIRD_PARTY.md)
 
 SmollerTTS generates 22.05 kHz speech locally using ONNX Runtime Web. The acoustic model was trained from scratch on LJSpeech; the waveform generator uses pretrained **HiFi-GAN LJ_V2** weights. No inference server or GPU is needed.
 
@@ -41,7 +41,20 @@ Entered text is processed in the browser. On first load, the browser downloads m
 
 Read each column from bottom to top. The acoustic network uses four attention/convolution blocks and six small frame blocks, with a hidden width of 160. Inference is split into three ONNX graphs: encoder, frame decoder and vocoder. Explore the blocks in the [interactive diagram](https://dunlichan.com/projects/smollertts/#architecture-title).
 
-[Model details](docs/model.md) describe the layers, parameter count and browser execution. [Training notes](docs/training.md) describe the final acoustic recipe and the scope of the included Python source.
+[Model details](docs/model.md) describe the layers, parameter count and browser execution. The [training guide](docs/training.md) covers LJSpeech preparation, alignment, acoustic training, checkpoint resume, listening and browser export.
+
+## Train your own weights
+
+The runnable training code targets the current acoustic model, initialized from scratch, with the frozen pretrained HiFi-GAN vocoder. Start with a small CPU check:
+
+```sh
+python -m pip install -e ".[train,export,dev]"
+python -m smollertts.smoke --output runs/smoke
+```
+
+This uses synthetic features to check the trainer; it does not train a usable voice. Follow the [full training guide](docs/training.md) for LJSpeech and GPU training. It includes the release config, data hashes, optimizer/RNG resume and native-versus-ONNX export checks. A complete new run has not been performed with the packaged pipeline, and the original accepted-recording list is incomplete, so it is not a promise of byte-identical reproduction.
+
+Contributions to speech quality, data preparation and browser performance are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and checks.
 
 ## Speech quality vs. model size (rough)
 
@@ -67,10 +80,11 @@ python tests/browser_smoke.py
 ```
 
 - `web/` — interface, pronunciation frontend and browser inference.
-- `smollertts/` — PyTorch acoustic architecture, vocoder definition and acoustic training components.
+- `smollertts/` — acoustic model, data preparation, trainer, checkpoint tools, inference and ONNX export.
+- `configs/` — training recipe, frozen vocabulary and development listening prompts.
 - `model/` — model configuration and pinned asset manifest.
 - `benchmarks/` — measurements, prompts and example audio.
-- `scripts/` — verified asset download, static build and local server.
+- `scripts/` — verified asset download, pronunciation CLI, static build and local server.
 - `docs/` — architecture, evaluation, training and hosting notes.
 
 The build writes `dist/projects/smollertts/`. See [deployment](docs/deployment.md) for static hosting. Generated files, downloaded weights, training data and checkpoints are kept out of Git.
